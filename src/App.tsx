@@ -25,7 +25,10 @@ export default function App() {
   useEffect(() => {
     const loadQRCodes = async () => {
       try {
+        console.log('🔄 Loading QR codes from Firebase...');
         const qrCodesData = await getAllQRCodes();
+        console.log('📊 Raw QR codes data from Firebase:', qrCodesData);
+        
         // Convert Firestore timestamps to Date objects
         const qrCodesWithDates = qrCodesData.map((qr: any) => ({
           ...qr,
@@ -33,9 +36,12 @@ export default function App() {
           updatedAt: qr.updatedAt?.toDate() || new Date(),
           lastScanned: qr.lastScanned?.toDate() || undefined
         }));
+        
+        console.log('📊 Processed QR codes data:', qrCodesWithDates);
         setQrCodes(qrCodesWithDates);
+        console.log('✅ QR codes loaded successfully. Count:', qrCodesWithDates.length);
       } catch (error) {
-        console.error('Error loading QR codes from Firebase:', error);
+        console.error('❌ Error loading QR codes from Firebase:', error);
       }
     };
 
