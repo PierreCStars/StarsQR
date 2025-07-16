@@ -96,6 +96,9 @@ export const getAllQRCodes = async (): Promise<QRCodeData[]> => {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
+    
+    // This should never be reached, but TypeScript requires it
+    return [];
   } catch (error) {
     console.error('❌ Error fetching QR codes:', error);
     // Return empty array instead of throwing
