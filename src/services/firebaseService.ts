@@ -68,25 +68,38 @@ export const createQRCode = async (qrData: Omit<QRCodeData, 'id' | 'createdAt' |
 export const getAllQRCodes = async (): Promise<QRCodeData[]> => {
   try {
     console.log('🔥 Firebase: Getting all QR codes...');
-    const q = query(collection(db, 'qrCodes'), orderBy('createdAt', 'desc'));
-    console.log('🔥 Firebase: Query created, executing...');
-    const querySnapshot = await getDocs(q);
-    console.log('🔥 Firebase: Query executed. Found documents:', querySnapshot.size);
     
-    const qrCodes = querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      console.log('🔥 Firebase: Document data:', { id: doc.id, ...data });
-      return {
-        id: doc.id,
-        ...data
-      };
-    }) as QRCodeData[];
-    
-    console.log('🔥 Firebase: Returning QR codes:', qrCodes);
-    return qrCodes;
+    // Add retry logic
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        const q = query(collection(db, 'qrCodes'), orderBy('createdAt', 'desc'));
+        console.log('🔥 Firebase: Query created, executing...');
+        const querySnapshot = await getDocs(q);
+        console.log('🔥 Firebase: Query executed. Found documents:', querySnapshot.size);
+        
+        const qrCodes = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          console.log('🔥 Firebase: Document data:', { id: doc.id, ...data });
+          return {
+            id: doc.id,
+            ...data
+          };
+        }) as QRCodeData[];
+        
+        console.log('🔥 Firebase: Returning QR codes:', qrCodes);
+        return qrCodes;
+      } catch (error) {
+        retries--;
+        console.log(`🔥 Firebase: Retry ${3 - retries}/3 due to error:`, error);
+        if (retries === 0) throw error;
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
   } catch (error) {
     console.error('❌ Error fetching QR codes:', error);
-    throw error;
+    // Return empty array instead of throwing
+    return [];
   }
 };
 

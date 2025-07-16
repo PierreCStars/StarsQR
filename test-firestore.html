@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Firestore Test</title>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD7sueQsP0m-xhFQ4C3YVUMINEMvyBWI2w",
+            authDomain: "stars-qr-code.firebaseapp.com",
+            projectId: "stars-qr-code",
+            storageBucket: "stars-qr-code.appspot.com",
+            messagingSenderId: "893928368865",
+            appId: "1:893928368865:web:662c503f2e40c4dfdb65a0"
+        };
+
+        console.log('Testing Firestore connection...');
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            console.log('✅ Firebase initialized');
+
+            // Test write
+            const docRef = await addDoc(collection(db, "test"), {
+                message: "Hello Firestore!",
+                timestamp: new Date()
+            });
+            console.log('✅ Write test passed. Document ID:', docRef.id);
+
+            // Test read
+            const querySnapshot = await getDocs(collection(db, "test"));
+            console.log('✅ Read test passed. Found', querySnapshot.size, 'documents');
+
+            console.log('🎉 All Firestore tests passed!');
+        } catch (error) {
+            console.error('❌ Firestore test failed:', error);
+        }
+    </script>
+</head>
+<body>
+    <h1>Firestore Test</h1>
+    <p>Check the console for test results.</p>
+</body>
+</html> 

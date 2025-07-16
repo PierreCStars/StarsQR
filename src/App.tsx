@@ -26,6 +26,10 @@ export default function App() {
     const loadQRCodes = async () => {
       try {
         console.log('🔄 Loading QR codes from Firebase...');
+        
+        // Add a small delay to ensure Firebase is fully initialized
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
         const qrCodesData = await getAllQRCodes();
         console.log('📊 Raw QR codes data from Firebase:', qrCodesData);
         
@@ -42,6 +46,8 @@ export default function App() {
         console.log('✅ QR codes loaded successfully. Count:', qrCodesWithDates.length);
       } catch (error) {
         console.error('❌ Error loading QR codes from Firebase:', error);
+        // Set empty array to avoid infinite loading state
+        setQrCodes([]);
       }
     };
 
