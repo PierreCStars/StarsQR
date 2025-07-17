@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { QrCode, BarChart3 } from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
+import { StarIcon } from './components/StarIcon';
 import QRCodeGenerator from './components/QRCodeGenerator';
 import QRCodeTracker from './components/QRCodeTracker';
 import URLRedirect from './components/URLRedirect';
@@ -96,10 +97,10 @@ export default function App() {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2">
-              <QrCode className="w-8 h-8 text-primary-600" />
-              <h1 className="text-xl font-bold text-gray-900">Stars QR Code Generator</h1>
-            </div>
+                          <div className="flex items-center gap-2">
+                <StarIcon className="w-8 h-8" />
+                <h1 className="text-xl font-bold text-gray-900">Stars QR Code Generator</h1>
+              </div>
             <p className="text-sm text-gray-500">with UTM Tracking</p>
           </div>
         </div>
@@ -117,7 +118,7 @@ export default function App() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              <QrCode className="w-4 h-4" />
+              <StarIcon className="w-4 h-4" />
               Generate QR Code
             </button>
             <button

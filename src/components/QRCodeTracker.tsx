@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { BarChart3, Eye, Calendar, ExternalLink, Trash2, Copy, QrCode, Download } from 'lucide-react';
+import { BarChart3, Eye, Calendar, ExternalLink, Trash2, Copy, Download } from 'lucide-react';
+import { StarIcon } from './StarIcon';
 import * as QRCode from 'qrcode';
 import { QRCodeData } from '../types';
 import { formatDate } from '../utils/utm';
@@ -111,7 +112,7 @@ export default function QRCodeTracker({ qrCodes, onDeleteQRCode, onIncrementScan
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-primary-50 p-4 rounded-lg">
             <div className="flex items-center gap-2">
-              <QrCode className="w-5 h-5 text-primary-600" />
+              <StarIcon className="w-5 h-5" />
               <span className="text-sm font-medium text-primary-700">Total QR Codes</span>
             </div>
             <p className="text-2xl font-bold text-primary-900 mt-1">{totalCodes}</p>
@@ -146,7 +147,7 @@ export default function QRCodeTracker({ qrCodes, onDeleteQRCode, onIncrementScan
 
         {qrCodes.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
-            <QrCode className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+            <StarIcon className="w-16 h-16 mx-auto mb-4" />
             <p>No QR codes generated yet</p>
             <p className="text-sm">Generate your first QR code to see it here</p>
           </div>

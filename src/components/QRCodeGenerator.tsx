@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import * as QRCode from 'qrcode';
-import { Download, Copy, QrCode, Scissors } from 'lucide-react';
+import { Download, Copy, Scissors } from 'lucide-react';
+import { StarIcon } from './StarIcon';
 import { QRCodeFormData, QRCodeData } from '../types';
 import { buildUrlWithUTM } from '../utils/utm';
 import { createShortUrl, saveShortUrl, validateUrl } from '../utils/urlShortener';
@@ -250,10 +251,10 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
 
   return (
     <div className="card max-w-4xl mx-auto">
-      <div className="flex items-center gap-2 mb-6">
-        <QrCode className="w-6 h-6 text-primary-600" />
-        <h1 className="text-2xl font-bold text-gray-900">Stars QR Code Generator</h1>
-      </div>
+              <div className="flex items-center gap-2 mb-6">
+          <StarIcon className="w-6 h-6" />
+          <h1 className="text-2xl font-bold text-gray-900">Stars QR Code Generator</h1>
+        </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Form Section */}
@@ -399,7 +400,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
               </>
             ) : (
               <>
-                <QrCode className="w-4 h-4" />
+                <StarIcon className="w-4 h-4" />
                 Generate QR Code
               </>
             )}
@@ -468,7 +469,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
 
           {!qrCodeUrl && (
             <div className="text-center text-gray-500 py-12">
-              <QrCode className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <StarIcon className="w-16 h-16 mx-auto mb-4" />
               <p>Fill in the form and generate your QR code</p>
             </div>
           )}
