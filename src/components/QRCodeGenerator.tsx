@@ -33,6 +33,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
   const [isLoadingCampaigns, setIsLoadingCampaigns] = useState(false);
   const [pageTitle, setPageTitle] = useState<string>('');
   const [qrCodeName, setQrCodeName] = useState<string>('');
+  const [showPopup, setShowPopup] = useState<boolean>(false);
 
 
 
@@ -260,6 +261,11 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
     link.download = `${fileName}.png`;
     link.href = qrCodeUrl;
     link.click();
+    
+    // Show popup after download
+    setTimeout(() => {
+      showDownloadPopup();
+    }, 500);
   };
 
   const downloadQRCodeSVG = () => {
@@ -273,6 +279,11 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
+    
+    // Show popup after download
+    setTimeout(() => {
+      showDownloadPopup();
+    }, 500);
   };
 
   const copyUrl = async () => {
@@ -286,6 +297,43 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
     }
   };
 
+  const showDownloadPopup = () => {
+    setShowPopup(true);
+  };
+
+  const handleGenerateAnother = () => {
+    // Clear the form
+    setFormData({
+      url: '',
+      utm_source: 'Showroom',
+      utm_medium: 'Displays',
+      utm_campaign: '',
+      utm_term: '',
+      utm_content: ''
+    });
+    
+    // Clear QR code data
+    setQrCodeUrl('');
+    setQrCodeSvg('');
+    setFinalUrl('');
+    setPageTitle('');
+    setQrCodeName('');
+    setErrors({});
+    setShowSuccessMessage(false);
+    
+    // Hide popup
+    setShowPopup(false);
+  };
+
+  const handleGoToAnalytics = () => {
+    // Navigate to analytics page (you can implement this based on your routing)
+    window.location.href = '/analytics';
+    setShowPopup(false);
+  };
+
+  const closePopup = () => {
+    setShowPopup(false);
+  };
 
 
   return (
@@ -552,6 +600,47 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
           )}
         </div>
       </div>
+
+      {/* Download Popup */}
+      {showPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <StarIcon className="w-6 h-6 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                QR Code Downloaded!
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Do you want to generate another QR Code?
+              </p>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={handleGenerateAnother}
+                  className="btn-primary flex-1"
+                >
+                  Yes, Generate Another
+                </button>
+                <button
+                  onClick={handleGoToAnalytics}
+                  className="btn-secondary flex-1"
+                >
+                  No, Go to Analytics
+                </button>
+              </div>
+              
+              <button
+                onClick={closePopup}
+                className="text-gray-500 hover:text-gray-700 text-sm mt-4"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
