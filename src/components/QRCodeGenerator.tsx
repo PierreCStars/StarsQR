@@ -26,7 +26,6 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
   const [finalUrl, setFinalUrl] = useState<string>('');
   const [shortenedUrl, setShortenedUrl] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isShortening, setIsShortening] = useState(false);
   const [errors, setErrors] = useState<Partial<QRCodeFormData>>({});
 
 
@@ -44,12 +43,12 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
   };
 
   const handleUrlBlur = async () => {
-    // Auto-shorten URL when user finishes typing (on blur)
-    // Only shorten if we have the required UTM parameters
-    if (formData.url.trim() && isValidUrl(formData.url) && 
-        formData.utm_source && formData.utm_medium && formData.utm_campaign && 
-        !shortenedUrl) {
-      await shortenUrlWithUTM();
+    // No auto-shortening on blur - we'll shorten when generating QR code
+    // Just validate the URL format
+    if (formData.url.trim() && !isValidUrl(formData.url)) {
+      setErrors(prev => ({ ...prev, url: 'Please enter a valid URL' }));
+    } else if (formData.url.trim() && isValidUrl(formData.url)) {
+      setErrors(prev => ({ ...prev, url: undefined }));
     }
   };
 
@@ -62,23 +61,6 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
       newErrors.url = 'Please enter a valid URL';
     }
 
-    if (!formData.utm_source.trim()) {
-      newErrors.utm_source = 'UTM Source is required';
-    }
-
-    if (!formData.utm_medium.trim()) {
-      newErrors.utm_medium = 'UTM Medium is required';
-    }
-
-    if (!formData.utm_campaign.trim()) {
-      newErrors.utm_campaign = 'UTM Campaign is required';
-    }
-
-    // Check if URL has been shortened
-    if (!shortenedUrl) {
-      newErrors.url = 'URL must be shortened before generating QR code. Please fill in all UTM parameters to auto-shorten.';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -87,65 +69,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
     return validateUrl(url);
   };
 
-  const shortenUrlWithUTM = async () => {
-    console.log('🔗 shortenUrlWithUTM called');
-    
-    if (!formData.url.trim()) {
-      console.log('❌ No URL to shorten');
-      return;
-    }
 
-    if (!isValidUrl(formData.url)) {
-      console.log('❌ Invalid URL format');
-      return;
-    }
-
-    // Don't shorten if already shortened
-    if (shortenedUrl) {
-      console.log('❌ URL already shortened:', shortenedUrl);
-      return;
-    }
-
-    console.log('✅ Starting URL shortening with UTM...');
-    setIsShortening(true);
-    
-    try {
-      // First, build the URL with UTM parameters
-      const utmParams = {
-        utm_source: formData.utm_source,
-        utm_medium: formData.utm_medium,
-        utm_campaign: formData.utm_campaign,
-        utm_term: formData.utm_term,
-        utm_content: formData.utm_content
-      };
-      
-      const urlWithUTM = buildUrlWithUTM(formData.url, utmParams);
-      console.log('🔗 URL with UTM parameters:', urlWithUTM);
-      
-      // Then shorten the URL with UTM parameters
-      console.log('🔗 Creating short URL for URL with UTM:', urlWithUTM);
-      const shortUrl = createShortUrl(urlWithUTM);
-      console.log('🔗 Generated short URL with UTM:', shortUrl);
-      
-      const shortCode = shortUrl.split('/').pop() || '';
-      console.log('🔗 Short code:', shortCode);
-      
-      // Save the shortened URL mapping
-      saveShortUrl(shortCode, urlWithUTM);
-      
-      setShortenedUrl(shortUrl);
-      setFormData(prev => ({ ...prev, url: shortUrl }));
-      
-      console.log('✅ URL with UTM parameters shortened successfully:', shortUrl);
-      
-      // Clear any URL errors
-      setErrors(prev => ({ ...prev, url: undefined }));
-    } catch (error) {
-      console.error('❌ Error shortening URL with UTM:', error);
-    } finally {
-      setIsShortening(false);
-    }
-  };
 
   const generateQRCode = async () => {
     console.log('Starting QR code generation...');
@@ -158,25 +82,33 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
     
     try {
       console.log('Form data:', formData);
+      
+      // Use default UTM parameters if not set
       const utmParams = {
-        utm_source: formData.utm_source,
-        utm_medium: formData.utm_medium,
-        utm_campaign: formData.utm_campaign,
-        utm_term: formData.utm_term,
-        utm_content: formData.utm_content
+        utm_source: formData.utm_source || 'Showroom',
+        utm_medium: formData.utm_medium || 'Displays',
+        utm_campaign: formData.utm_campaign || 'Car Sales',
+        utm_term: formData.utm_term || '',
+        utm_content: formData.utm_content || ''
       };
 
       // First, create the URL with UTM parameters
       const urlWithUTM = buildUrlWithUTM(formData.url, utmParams);
       console.log('🔗 URL with UTM parameters:', urlWithUTM);
       
-      // Only use shortened URL for QR code generation
-      if (!shortenedUrl) {
-        console.log('❌ No shortened URL available, cannot generate QR code');
-        return;
-      }
+      // Shorten the URL with UTM parameters
+      console.log('🔗 Shortening URL with UTM parameters...');
+      const shortUrl = createShortUrl(urlWithUTM);
+      console.log('🔗 Generated short URL with UTM:', shortUrl);
       
-      let finalShortUrl = shortenedUrl;
+      const shortCode = shortUrl.split('/').pop() || '';
+      console.log('🔗 Short code:', shortCode);
+      
+      // Save the shortened URL mapping
+      saveShortUrl(shortCode, urlWithUTM);
+      
+      setShortenedUrl(shortUrl);
+      let finalShortUrl = shortUrl;
       console.log('🔗 Using shortened URL for QR code:', finalShortUrl);
       
       setFinalUrl(finalShortUrl);
@@ -323,29 +255,14 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
                 className={`input-field flex-1 ${errors.url ? 'border-red-500' : ''}`}
               />
               <div className="flex items-center gap-2 px-4 text-sm text-gray-500">
-                {isShortening ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                    <span>Shortening...</span>
-                  </>
-                ) : (
-                  <>
-                    <Scissors className="w-4 h-4" />
-                    <span>Auto-shorten</span>
-                  </>
-                )}
+                <Scissors className="w-4 h-4" />
+                <span>Will shorten with UTM</span>
               </div>
             </div>
             {errors.url && <p className="text-red-500 text-sm mt-1">{errors.url}</p>}
-            {shortenedUrl ? (
-              <p className="text-green-600 text-sm mt-1">
-                ✓ URL with UTM parameters automatically shortened! The shortened URL will be used for the QR code.
-              </p>
-            ) : (
-              <p className="text-blue-600 text-sm mt-1">
-                ℹ️ Fill in all UTM parameters to automatically shorten the URL with UTM tracking.
-              </p>
-            )}
+            <p className="text-blue-600 text-sm mt-1">
+              ℹ️ URL will be shortened with UTM parameters when you generate the QR code. Default UTM parameters will be used if not specified.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -442,18 +359,13 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
 
           <button
             onClick={generateQRCode}
-            disabled={isGenerating || !shortenedUrl}
+            disabled={isGenerating}
             className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {isGenerating ? (
               <>
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 Generating...
-              </>
-            ) : !shortenedUrl ? (
-              <>
-                <StarIcon className="w-4 h-4" />
-                Fill UTM Parameters to Enable
               </>
             ) : (
               <>
