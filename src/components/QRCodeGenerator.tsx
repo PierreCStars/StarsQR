@@ -27,6 +27,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
   const [shortenedUrl, setShortenedUrl] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [errors, setErrors] = useState<Partial<QRCodeFormData>>({});
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
 
 
@@ -188,6 +189,14 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
 
       console.log('Calling onQRCodeGenerated with:', qrDataForState);
       onQRCodeGenerated(qrDataForState);
+      
+      // Show success message
+      setShowSuccessMessage(true);
+      
+      // Hide success message after 5 seconds
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 5000);
     } catch (error) {
       console.error('Error generating QR code:', error);
     } finally {
@@ -382,6 +391,19 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
           
           {qrCodeUrl && (
             <>
+              {showSuccessMessage && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">✓</span>
+                    </div>
+                    <p className="text-green-800 font-medium">
+                      ✓ URL with UTM parameters automatically shortened! The shortened URL will be used for the QR code.
+                    </p>
+                  </div>
+                </div>
+              )}
+              
               <div className="text-center">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Generated QR Code</h3>
                 <div className="bg-white p-4 rounded-lg border inline-block">
