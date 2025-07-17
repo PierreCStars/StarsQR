@@ -75,10 +75,65 @@ export const generateQRCodeName = (url: string, title?: string): string => {
     return `QR-${cleanTitle}`;
   }
   
-  // Fallback to URL-based naming
+  // Enhanced URL-based naming with breadcrumbs
   const urlObj = new URL(url);
   const domain = urlObj.hostname.replace(/^www\./, '');
-  const path = urlObj.pathname.split('/').filter(Boolean).join('-');
   
-  return `QR-${domain}${path ? `-${path}` : ''}`;
+  // Extract breadcrumbs from pathname
+  const pathSegments = urlObj.pathname.split('/').filter(Boolean);
+  
+  // Clean and format breadcrumbs
+  const breadcrumbs = pathSegments.map(segment => {
+    // Remove file extensions and clean the segment
+    return segment
+      .replace(/\.[^/.]+$/, '') // Remove file extension
+      .replace(/[^a-zA-Z0-9\s-]/g, '') // Remove special characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single
+      .toLowerCase(); // Convert to lowercase
+  }).filter(segment => segment.length > 0); // Remove empty segments
+  
+  // Create meaningful breadcrumb path
+  let breadcrumbPath = '';
+  if (breadcrumbs.length > 0) {
+    // Take the most meaningful segments (usually the last 2-3)
+    const meaningfulSegments = breadcrumbs.slice(-3);
+    breadcrumbPath = meaningfulSegments.join('-');
+  }
+  
+  // Handle query parameters for additional context
+  const searchParams = urlObj.searchParams;
+  const relevantParams: string[] = [];
+  
+  // Add relevant query parameters that might be useful for naming
+  const relevantParamKeys = ['id', 'product', 'model', 'category', 'type'];
+  relevantParamKeys.forEach(key => {
+    const value = searchParams.get(key);
+    if (value) {
+      const cleanValue = value
+        .replace(/[^a-zA-Z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .substring(0, 20); // Limit length
+      if (cleanValue) {
+        relevantParams.push(`${key}-${cleanValue}`);
+      }
+    }
+  });
+  
+  // Build the final name
+  let finalName = `QR-${domain}`;
+  
+  if (breadcrumbPath) {
+    finalName += `-${breadcrumbPath}`;
+  }
+  
+  if (relevantParams.length > 0) {
+    finalName += `-${relevantParams.join('-')}`;
+  }
+  
+  // Limit total length and clean up
+  return finalName
+    .substring(0, 80) // Limit total length
+    .replace(/-+/g, '-') // Replace multiple hyphens with single
+    .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
 }; 
