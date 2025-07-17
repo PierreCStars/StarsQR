@@ -373,6 +373,8 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
                 <option value="Displays">Displays</option>
                 <option value="Stickers">Stickers</option>
                 <option value="Brochure">Brochure</option>
+                <option value="Meta">Meta</option>
+                <option value="LinkedIn">LinkedIn</option>
               </select>
               {errors.utm_medium && <p className="text-red-500 text-sm mt-1">{errors.utm_medium}</p>}
             </div>
