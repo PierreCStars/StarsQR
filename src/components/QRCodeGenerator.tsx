@@ -17,7 +17,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
     url: '',
     utm_source: 'Showroom',
     utm_medium: 'Displays',
-    utm_campaign: 'Car Sales',
+    utm_campaign: '',
     utm_term: '',
     utm_content: ''
   });
@@ -25,7 +25,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [qrCodeSvg, setQrCodeSvg] = useState<string>('');
   const [finalUrl, setFinalUrl] = useState<string>('');
-  const [shortenedUrl, setShortenedUrl] = useState<string>('');
+  // Removed shortenedUrl state as it's not being used
   const [isGenerating, setIsGenerating] = useState(false);
   const [errors, setErrors] = useState<Partial<QRCodeFormData>>({});
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -81,8 +81,8 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
       console.log('✅ HubSpot campaigns loaded:', campaigns);
     } catch (error) {
       console.error('❌ Error loading HubSpot campaigns:', error);
-      // Keep the default campaigns if loading fails
-      setHubspotCampaigns(['Car Sales', 'Yachting Charter', 'Yachting Sales', 'Real Estate', 'Events']);
+      // Set empty array if loading fails - no fallback campaigns
+      setHubspotCampaigns([]);
     } finally {
       setIsLoadingCampaigns(false);
     }
@@ -111,7 +111,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
       const utmParams = {
         utm_source: formData.utm_source || 'Showroom',
         utm_medium: formData.utm_medium || 'Displays',
-        utm_campaign: formData.utm_campaign || 'Car Sales',
+        utm_campaign: formData.utm_campaign || '',
         utm_term: formData.utm_term || '',
         utm_content: formData.utm_content || ''
       };
@@ -131,7 +131,6 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
       // Save the shortened URL mapping
       saveShortUrl(shortCode, urlWithUTM);
       
-      setShortenedUrl(shortUrl);
       let finalShortUrl = shortUrl;
       console.log('🔗 Using shortened URL for QR code:', finalShortUrl);
       
@@ -351,7 +350,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
             >
               {isLoadingCampaigns ? (
                 <option value="">Loading campaigns...</option>
-              ) : (
+              ) : hubspotCampaigns.length > 0 ? (
                 <>
                   <option value="">Select a campaign</option>
                   {hubspotCampaigns.map((campaign) => (
@@ -360,12 +359,19 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
                     </option>
                   ))}
                 </>
+              ) : (
+                <option value="">No campaigns found in HubSpot</option>
               )}
             </select>
             {errors.utm_campaign && <p className="text-red-500 text-sm mt-1">{errors.utm_campaign}</p>}
             {isLoadingCampaigns && (
               <p className="text-blue-600 text-sm mt-1">
                 🔄 Loading campaigns from HubSpot...
+              </p>
+            )}
+            {!isLoadingCampaigns && hubspotCampaigns.length === 0 && (
+              <p className="text-orange-600 text-sm mt-1">
+                ⚠️ No campaigns found in HubSpot. Please create campaigns in your HubSpot account or check your API permissions.
               </p>
             )}
           </div>
