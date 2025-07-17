@@ -80,24 +80,34 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
   };
 
   const shortenUrl = async () => {
+    console.log('🔗 shortenUrl called with:', formData.url);
+    
     if (!formData.url.trim()) {
+      console.log('❌ No URL to shorten');
       return;
     }
 
     if (!isValidUrl(formData.url)) {
+      console.log('❌ Invalid URL format');
       return;
     }
 
     // Don't shorten if already shortened
     if (shortenedUrl) {
+      console.log('❌ URL already shortened:', shortenedUrl);
       return;
     }
 
+    console.log('✅ Starting URL shortening...');
     setIsShortening(true);
     
     try {
+      console.log('🔗 Creating short URL for:', formData.url);
       const shortUrl = createShortUrl(formData.url);
+      console.log('🔗 Generated short URL:', shortUrl);
+      
       const shortCode = shortUrl.split('/').pop() || '';
+      console.log('🔗 Short code:', shortCode);
       
       // Save the shortened URL mapping
       saveShortUrl(shortCode, formData.url);
@@ -105,10 +115,12 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
       setShortenedUrl(shortUrl);
       setFormData(prev => ({ ...prev, url: shortUrl }));
       
+      console.log('✅ URL shortened successfully:', shortUrl);
+      
       // Clear any URL errors
       setErrors(prev => ({ ...prev, url: undefined }));
     } catch (error) {
-      console.error('Error shortening URL:', error);
+      console.error('❌ Error shortening URL:', error);
     } finally {
       setIsShortening(false);
     }
@@ -124,9 +136,19 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
     setIsGenerating(true);
     
     // Auto-shorten URL if not already shortened and all required fields are filled
+    console.log('Checking auto-shorten conditions:');
+    console.log('- shortenedUrl:', shortenedUrl);
+    console.log('- formData.url:', formData.url);
+    console.log('- formData.utm_source:', formData.utm_source);
+    console.log('- formData.utm_medium:', formData.utm_medium);
+    console.log('- formData.utm_campaign:', formData.utm_campaign);
+    
     if (!shortenedUrl && formData.url && formData.utm_source && formData.utm_medium && formData.utm_campaign) {
-      console.log('Auto-shortening URL...');
+      console.log('✅ Auto-shortening URL...');
       await shortenUrl();
+      console.log('✅ URL shortening completed. New shortenedUrl:', shortenedUrl);
+    } else {
+      console.log('❌ Auto-shorten conditions not met');
     }
     
     try {
