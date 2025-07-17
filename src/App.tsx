@@ -5,7 +5,7 @@ import QRCodeGenerator from './components/QRCodeGenerator';
 import QRCodeTracker from './components/QRCodeTracker';
 import URLRedirect from './components/URLRedirect';
 import { QRCodeData } from './types';
-import { getAllQRCodes, deleteQRCode, incrementScanCount } from './services/firebaseService';
+import { getAllQRCodes, deleteQRCode, incrementScanCount, clearAllQRCodes } from './services/firebaseService';
 
 type TabType = 'generator' | 'tracker';
 
@@ -91,6 +91,15 @@ export default function App() {
     }
   };
 
+  const handleClearAllQRCodes = async () => {
+    try {
+      await clearAllQRCodes();
+      setQrCodes([]);
+    } catch (error) {
+      console.error('Error clearing all QR codes:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -148,6 +157,7 @@ export default function App() {
             qrCodes={qrCodes}
             onDeleteQRCode={handleDeleteQRCode}
             onIncrementScan={handleIncrementScan}
+            onClearAllQRCodes={handleClearAllQRCodes}
           />
         )}
       </main>

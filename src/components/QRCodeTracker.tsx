@@ -9,11 +9,13 @@ interface QRCodeTrackerProps {
   qrCodes: QRCodeData[];
   onDeleteQRCode: (id: string) => void;
   onIncrementScan: (id: string) => void;
+  onClearAllQRCodes: () => void;
 }
 
-export default function QRCodeTracker({ qrCodes, onDeleteQRCode, onIncrementScan }: QRCodeTrackerProps) {
+export default function QRCodeTracker({ qrCodes, onDeleteQRCode, onIncrementScan, onClearAllQRCodes }: QRCodeTrackerProps) {
 
   const [qrCodeImages, setQrCodeImages] = useState<Record<string, { png: string; svg: string }>>({});
+  const [showClearConfirmation, setShowClearConfirmation] = useState(false);
 
   const totalScans = qrCodes.reduce((sum, qr) => sum + qr.scanCount, 0);
   const totalCodes = qrCodes.length;
@@ -142,8 +144,47 @@ export default function QRCodeTracker({ qrCodes, onDeleteQRCode, onIncrementScan
       <div className="card">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-900">Generated QR Codes</h2>
-          <span className="text-sm text-gray-500">{qrCodes.length} codes</span>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-500">{qrCodes.length} codes</span>
+            {qrCodes.length > 0 && (
+              <button
+                onClick={() => setShowClearConfirmation(true)}
+                className="px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 hover:border-red-300 transition-colors"
+              >
+                Clear All
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Clear Confirmation Dialog */}
+        {showClearConfirmation && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md mx-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Clear All QR Codes</h3>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to delete all {qrCodes.length} QR codes? This action cannot be undone.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowClearConfirmation(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    onClearAllQRCodes();
+                    setShowClearConfirmation(false);
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-red-600 rounded-md hover:bg-red-700 transition-colors"
+                >
+                  Clear All
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {qrCodes.length === 0 ? (
           <div className="text-center py-12 text-gray-500">

@@ -177,6 +177,25 @@ export const deleteQRCode = async (id: string): Promise<void> => {
   }
 };
 
+export const clearAllQRCodes = async (): Promise<void> => {
+  try {
+    console.log('🔥 Firebase: Clearing all QR codes...');
+    
+    // Get all QR code documents
+    const querySnapshot = await getDocs(collection(db, 'qrCodes'));
+    console.log(`🔥 Firebase: Found ${querySnapshot.size} QR codes to delete`);
+    
+    // Delete each document
+    const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
+    await Promise.all(deletePromises);
+    
+    console.log('🔥 Firebase: All QR codes deleted successfully');
+  } catch (error) {
+    console.error('Error clearing all QR codes:', error);
+    throw error;
+  }
+};
+
 export const incrementScanCount = async (id: string): Promise<void> => {
   try {
     const docRef = doc(db, 'qrCodes', id);
