@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import * as QRCode from 'qrcode';
-import { Download, Copy, Scissors, Upload } from 'lucide-react';
+import { Download, Copy, Scissors } from 'lucide-react';
 import { StarIcon } from './StarIcon';
 import { QRCodeFormData, QRCodeData } from '../types';
 import { buildUrlWithUTM } from '../utils/utm';
-import { createShortUrl, saveShortUrl, validateUrl } from '../utils/urlShortener';
+import { createShortUrl, saveShortUrl, validateUrl, extractPageTitle, generateQRCodeName } from '../utils/urlShortener';
 import { createQRCode } from '../services/firebaseService';
 import { hubspotService } from '../services/hubspotService';
 
@@ -31,9 +31,8 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [hubspotCampaigns, setHubspotCampaigns] = useState<string[]>([]);
   const [isLoadingCampaigns, setIsLoadingCampaigns] = useState(false);
-  const [csvCampaigns, setCsvCampaigns] = useState<string[]>([]);
-  const [useCsvCampaigns, setUseCsvCampaigns] = useState(false);
-  const [csvFileName, setCsvFileName] = useState<string>('');
+  const [pageTitle, setPageTitle] = useState<string>('');
+  const [qrCodeName, setQrCodeName] = useState<string>('');
 
 
 
@@ -56,6 +55,29 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
       setErrors(prev => ({ ...prev, url: 'Please enter a valid URL' }));
     } else if (formData.url.trim() && isValidUrl(formData.url)) {
       setErrors(prev => ({ ...prev, url: undefined }));
+      
+      // Extract page title for better QR code naming
+      try {
+        console.log('🔗 Extracting page title...');
+        const title = await extractPageTitle(formData.url);
+        setPageTitle(title);
+        
+        // Generate QR code name
+        const name = generateQRCodeName(formData.url, title);
+        setQrCodeName(name);
+        
+        if (title) {
+          console.log('✅ Page title extracted:', title);
+          console.log('✅ QR code name generated:', name);
+        } else {
+          console.log('⚠️ No page title found, using URL-based naming');
+        }
+      } catch (error) {
+        console.error('❌ Error extracting page title:', error);
+        // Fallback to URL-based naming
+        const name = generateQRCodeName(formData.url);
+        setQrCodeName(name);
+      }
     }
   };
 
@@ -234,7 +256,8 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
     if (!qrCodeUrl) return;
     
     const link = document.createElement('a');
-    link.download = `qr-code-${Date.now()}.png`;
+    const fileName = qrCodeName || `qr-code-${Date.now()}`;
+    link.download = `${fileName}.png`;
     link.href = qrCodeUrl;
     link.click();
   };
@@ -245,7 +268,8 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
     const blob = new Blob([qrCodeSvg], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.download = `qr-code-${Date.now()}.svg`;
+    const fileName = qrCodeName || `qr-code-${Date.now()}`;
+    link.download = `${fileName}.svg`;
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
@@ -298,6 +322,20 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
             <p className="text-blue-600 text-sm mt-1">
               ℹ️ URL will be shortened with UTM parameters when you generate the QR code. Default UTM parameters will be used if not specified.
             </p>
+            {pageTitle && (
+              <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center mt-0.5">
+                    <span className="text-white text-xs font-bold">✓</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-green-800 text-sm font-medium">Page title detected:</p>
+                    <p className="text-green-700 text-sm mt-1">{pageTitle}</p>
+                    <p className="text-green-600 text-xs mt-1">QR code will be named: <span className="font-mono">{qrCodeName}</span></p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
