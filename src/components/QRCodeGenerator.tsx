@@ -10,9 +10,10 @@ import { hubspotService } from '../services/hubspotService';
 
 interface QRCodeGeneratorProps {
   onQRCodeGenerated: (qrData: QRCodeData) => void;
+  onGoToAnalytics?: () => void;
 }
 
-export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorProps) {
+export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: QRCodeGeneratorProps) {
   const [formData, setFormData] = useState<QRCodeFormData>({
     url: '',
     utm_source: 'Showroom',
@@ -328,7 +329,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
 
   const handleGoToAnalytics = () => {
     // Navigate to analytics page (you can implement this based on your routing)
-    window.location.href = '/analytics';
+    onGoToAnalytics?.();
     setShowPopup(false);
   };
 
