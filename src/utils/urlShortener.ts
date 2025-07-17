@@ -96,9 +96,15 @@ export const generateQRCodeName = (url: string, title?: string): string => {
   // Special naming for Stars.mc domain
   if (domain === 'stars.mc' && breadcrumbs.length >= 3) {
     // Filter out generic breadcrumbs that don't add value to the name
-    const genericTerms = ['voitures', 'occasion', 'monaco', 'autre', 'd039occasion'];
+    const genericTerms = [
+      'voitures', 'voiture', 'occasion', 'occasions', 'monaco', 'autre', 'autres',
+      'd039occasion', 'do39occasion', 'd039', 'do39', 'd0', 'do',
+      'www', 'index', 'home', 'page', 'product', 'item', 'category', 'categories'
+    ];
     const meaningfulBreadcrumbs = breadcrumbs.filter(breadcrumb => 
-      !genericTerms.includes(breadcrumb) && breadcrumb.length > 2
+      !genericTerms.includes(breadcrumb) && 
+      !genericTerms.some(term => breadcrumb.includes(term)) && // Also filter if breadcrumb contains any generic term
+      breadcrumb.length > 2
     );
     
     if (meaningfulBreadcrumbs.length >= 2) {
