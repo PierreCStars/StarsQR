@@ -6,6 +6,7 @@ import { QRCodeFormData, QRCodeData } from '../types';
 import { buildUrlWithUTM } from '../utils/utm';
 import { createShortUrl, saveShortUrl, validateUrl } from '../utils/urlShortener';
 import { createQRCode } from '../services/firebaseService';
+import { hubspotService } from '../services/hubspotService';
 
 interface QRCodeGeneratorProps {
   onQRCodeGenerated: (qrData: QRCodeData) => void;
@@ -28,6 +29,8 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
   const [isGenerating, setIsGenerating] = useState(false);
   const [errors, setErrors] = useState<Partial<QRCodeFormData>>({});
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [hubspotCampaigns, setHubspotCampaigns] = useState<string[]>([]);
+  const [isLoadingCampaigns, setIsLoadingCampaigns] = useState(false);
 
 
 
@@ -69,6 +72,26 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
   const isValidUrl = (url: string): boolean => {
     return validateUrl(url);
   };
+
+  const loadHubSpotCampaigns = async () => {
+    setIsLoadingCampaigns(true);
+    try {
+      const campaigns = await hubspotService.getCampaignNames();
+      setHubspotCampaigns(campaigns);
+      console.log('✅ HubSpot campaigns loaded:', campaigns);
+    } catch (error) {
+      console.error('❌ Error loading HubSpot campaigns:', error);
+      // Keep the default campaigns if loading fails
+      setHubspotCampaigns(['Car Sales', 'Yachting Charter', 'Yachting Sales', 'Real Estate', 'Events']);
+    } finally {
+      setIsLoadingCampaigns(false);
+    }
+  };
+
+  // Load HubSpot campaigns when component mounts
+  React.useEffect(() => {
+    loadHubSpotCampaigns();
+  }, []);
 
 
 
@@ -316,22 +339,35 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
 
           <div>
             <label htmlFor="utm_campaign" className="block text-sm font-medium text-gray-700 mb-2">
-              UTM Campaign *
+              UTM Campaign * (from HubSpot)
             </label>
             <select
               id="utm_campaign"
               name="utm_campaign"
               value={formData.utm_campaign}
               onChange={handleInputChange}
-              className={`input-field ${errors.utm_campaign ? 'border-red-500' : ''}`}
+              disabled={isLoadingCampaigns}
+              className={`input-field ${errors.utm_campaign ? 'border-red-500' : ''} ${isLoadingCampaigns ? 'opacity-50' : ''}`}
             >
-              <option value="Car Sales">Car Sales</option>
-              <option value="Yachting Charter">Yachting Charter</option>
-              <option value="Yachting Sales">Yachting Sales</option>
-              <option value="Real Estate">Real Estate</option>
-              <option value="Events">Events</option>
+              {isLoadingCampaigns ? (
+                <option value="">Loading campaigns...</option>
+              ) : (
+                <>
+                  <option value="">Select a campaign</option>
+                  {hubspotCampaigns.map((campaign) => (
+                    <option key={campaign} value={campaign}>
+                      {campaign}
+                    </option>
+                  ))}
+                </>
+              )}
             </select>
             {errors.utm_campaign && <p className="text-red-500 text-sm mt-1">{errors.utm_campaign}</p>}
+            {isLoadingCampaigns && (
+              <p className="text-blue-600 text-sm mt-1">
+                🔄 Loading campaigns from HubSpot...
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
