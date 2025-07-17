@@ -93,6 +93,29 @@ export const generateQRCodeName = (url: string, title?: string): string => {
       .toLowerCase(); // Convert to lowercase
   }).filter(segment => segment.length > 0); // Remove empty segments
   
+  // Special naming for Stars.mc domain
+  if (domain === 'stars.mc' && breadcrumbs.length >= 7) {
+    // Use breadcrumbs at positions 4 and 7 (0-indexed, so positions 3 and 6)
+    const breadcrumb4 = breadcrumbs[3] || ''; // 4th breadcrumb (index 3)
+    const breadcrumb7 = breadcrumbs[6] || ''; // 7th breadcrumb (index 6)
+    
+    let finalName = `QR-stars-mc`;
+    
+    if (breadcrumb4) {
+      finalName += `-${breadcrumb4}`;
+    }
+    
+    if (breadcrumb7) {
+      finalName += `-${breadcrumb7}`;
+    }
+    
+    return finalName
+      .substring(0, 80) // Limit total length
+      .replace(/-+/g, '-') // Replace multiple hyphens with single
+      .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+  }
+  
+  // Normal naming system for other domains
   // Create meaningful breadcrumb path
   let breadcrumbPath = '';
   if (breadcrumbs.length > 0) {
