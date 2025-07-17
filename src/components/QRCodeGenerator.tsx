@@ -123,6 +123,12 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
 
     setIsGenerating(true);
     
+    // Auto-shorten URL if not already shortened and all required fields are filled
+    if (!shortenedUrl && formData.url && formData.utm_source && formData.utm_medium && formData.utm_campaign) {
+      console.log('Auto-shortening URL...');
+      await shortenUrl();
+    }
+    
     try {
       console.log('Form data:', formData);
       const utmParams = {
