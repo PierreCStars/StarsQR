@@ -39,40 +39,70 @@ export interface QRCodeScan {
 
 // QR Code Operations
 export const createQRCode = async (qrData: Omit<QRCodeData, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
-  try {
-    console.log('Firebase service received:', JSON.stringify(qrData, null, 2));
-    
-    // Filter out undefined values
-    const cleanData = Object.fromEntries(
-      Object.entries(qrData).filter(([key, value]) => {
-        console.log(`Checking field ${key}:`, value, typeof value);
-        return value !== undefined;
-      })
-    );
-    
-    console.log('Clean data for Firebase:', JSON.stringify(cleanData, null, 2));
-    
-    const docRef = await addDoc(collection(db, 'qrCodes'), {
-      ...cleanData,
-      scanCount: 0,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
-    return docRef.id;
-  } catch (error) {
-    console.error('Error creating QR code:', error);
-    throw error;
+  // Add retry logic with exponential backoff
+  let retries = 3;
+  let delay = 1000; // Start with 1 second delay
+  
+  while (retries > 0) {
+    try {
+      console.log(`🔥 Firebase: Attempt ${4 - retries}/3 to create QR code...`);
+      console.log('🔥 Firebase: Received data:', JSON.stringify(qrData, null, 2));
+      
+      // Filter out undefined values
+      const cleanData = Object.fromEntries(
+        Object.entries(qrData).filter(([key, value]) => {
+          console.log(`🔥 Firebase: Checking field ${key}:`, value, typeof value);
+          return value !== undefined;
+        })
+      );
+      
+      console.log('🔥 Firebase: Clean data for Firebase:', JSON.stringify(cleanData, null, 2));
+      
+      console.log('🔥 Firebase: Creating document in qrCodes collection...');
+      const docRef = await addDoc(collection(db, 'qrCodes'), {
+        ...cleanData,
+        scanCount: 0,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      
+      console.log('🔥 Firebase: Document created successfully with ID:', docRef.id);
+      return docRef.id;
+    } catch (error) {
+      retries--;
+      console.error(`❌ Firebase: Retry ${3 - retries}/3 due to error:`, error);
+      console.error('❌ Firebase: Error details:', {
+        code: (error as any).code,
+        message: (error as any).message,
+        stack: (error as any).stack
+      });
+      
+      if (retries === 0) {
+        console.error('❌ Firebase: All retries exhausted, throwing error');
+        throw error;
+      }
+      
+      console.log(`🔥 Firebase: Waiting ${delay}ms before retry...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      delay *= 2; // Exponential backoff
+    }
   }
+  
+  // This should never be reached, but TypeScript requires it
+  throw new Error('Failed to create QR code after all retries');
 };
 
 export const getAllQRCodes = async (): Promise<QRCodeData[]> => {
   try {
     console.log('🔥 Firebase: Getting all QR codes...');
     
-    // Add retry logic
+    // Add retry logic with exponential backoff
     let retries = 3;
+    let delay = 1000; // Start with 1 second delay
+    
     while (retries > 0) {
       try {
+        console.log(`🔥 Firebase: Attempt ${4 - retries}/3 to fetch QR codes...`);
         const q = query(collection(db, 'qrCodes'), orderBy('createdAt', 'desc'));
         console.log('🔥 Firebase: Query created, executing...');
         const querySnapshot = await getDocs(q);
@@ -92,8 +122,15 @@ export const getAllQRCodes = async (): Promise<QRCodeData[]> => {
       } catch (error) {
         retries--;
         console.log(`🔥 Firebase: Retry ${3 - retries}/3 due to error:`, error);
-        if (retries === 0) throw error;
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log(`🔥 Firebase: Waiting ${delay}ms before retry...`);
+        
+        if (retries === 0) {
+          console.error('❌ Firebase: All retries exhausted, returning empty array');
+          return [];
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, delay));
+        delay *= 2; // Exponential backoff
       }
     }
     

@@ -9,7 +9,9 @@
     "build:dev": "tsc && vite build --mode development",
     "build:prod": "tsc && vite build --mode production",
     "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "deploy": "vercel --prod",
+    "deploy:dev": "vercel"
   },
   "dependencies": {
     "autoprefixer": "^10.4.16",
@@ -32,6 +34,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.4",
     "typescript": "^5.2.2",
+    "vercel": "^44.4.3",
     "vite": "^4.5.0"
   }
 }
