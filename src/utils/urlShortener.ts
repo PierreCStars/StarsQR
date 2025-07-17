@@ -72,7 +72,7 @@ export const generateQRCodeName = (url: string, title?: string): string => {
       .replace(/\s+/g, '-') // Replace spaces with hyphens
       .substring(0, 50); // Limit length
     
-    return `QR-${cleanTitle}`;
+    return cleanTitle;
   }
   
   // Enhanced URL-based naming with breadcrumbs
@@ -94,69 +94,45 @@ export const generateQRCodeName = (url: string, title?: string): string => {
   }).filter(segment => segment.length > 0); // Remove empty segments
   
   // Special naming for Stars.mc domain
-  if (domain === 'stars.mc' && breadcrumbs.length >= 7) {
-    // Use breadcrumbs at positions 4 and 7 (0-indexed, so positions 3 and 6)
-    const breadcrumb4 = breadcrumbs[3] || ''; // 4th breadcrumb (index 3)
-    const breadcrumb7 = breadcrumbs[6] || ''; // 7th breadcrumb (index 6)
+  if (domain === 'stars.mc' && breadcrumbs.length >= 3) {
+    // Filter out generic breadcrumbs that don't add value to the name
+    const genericTerms = ['voitures', 'occasion', 'monaco', 'autre', 'd039occasion'];
+    const meaningfulBreadcrumbs = breadcrumbs.filter(breadcrumb => 
+      !genericTerms.includes(breadcrumb) && breadcrumb.length > 2
+    );
     
-    let finalName = `QR-stars-mc`;
-    
-    if (breadcrumb4) {
-      finalName += `-${breadcrumb4}`;
-    }
-    
-    if (breadcrumb7) {
-      finalName += `-${breadcrumb7}`;
-    }
-    
-    return finalName
-      .substring(0, 80) // Limit total length
-      .replace(/-+/g, '-') // Replace multiple hyphens with single
-      .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
-  }
-  
-  // Normal naming system for other domains
-  // Create meaningful breadcrumb path
-  let breadcrumbPath = '';
-  if (breadcrumbs.length > 0) {
-    // Take the most meaningful segments (usually the last 2-3)
-    const meaningfulSegments = breadcrumbs.slice(-3);
-    breadcrumbPath = meaningfulSegments.join('-');
-  }
-  
-  // Handle query parameters for additional context
-  const searchParams = urlObj.searchParams;
-  const relevantParams: string[] = [];
-  
-  // Add relevant query parameters that might be useful for naming
-  const relevantParamKeys = ['id', 'product', 'model', 'category', 'type'];
-  relevantParamKeys.forEach(key => {
-    const value = searchParams.get(key);
-    if (value) {
-      const cleanValue = value
-        .replace(/[^a-zA-Z0-9\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .substring(0, 20); // Limit length
-      if (cleanValue) {
-        relevantParams.push(`${key}-${cleanValue}`);
+    if (meaningfulBreadcrumbs.length >= 2) {
+      // Take brand (first meaningful) and model/variant (last meaningful)
+      const brand = meaningfulBreadcrumbs[0];
+      const model = meaningfulBreadcrumbs[meaningfulBreadcrumbs.length - 1];
+      
+      if (brand && model && brand !== model) {
+        return `${brand}-${model}`;
+      } else if (brand) {
+        return brand;
+      } else if (model) {
+        return model;
       }
+    } else if (meaningfulBreadcrumbs.length === 1) {
+      return meaningfulBreadcrumbs[0];
     }
-  });
-  
-  // Build the final name
-  let finalName = `QR-${domain}`;
-  
-  if (breadcrumbPath) {
-    finalName += `-${breadcrumbPath}`;
   }
   
-  if (relevantParams.length > 0) {
-    finalName += `-${relevantParams.join('-')}`;
+  // For other domains, create a more meaningful name
+  if (breadcrumbs.length > 0) {
+    // Filter out generic terms for all domains
+    const genericTerms = ['www', 'index', 'home', 'page', 'product', 'item'];
+    const meaningfulBreadcrumbs = breadcrumbs.filter(breadcrumb => 
+      !genericTerms.includes(breadcrumb) && breadcrumb.length > 2
+    );
+    
+    if (meaningfulBreadcrumbs.length > 0) {
+      // Take the most meaningful segments (last 2-3)
+      const meaningfulSegments = meaningfulBreadcrumbs.slice(-2);
+      return meaningfulSegments.join('-');
+    }
   }
   
-  // Limit total length and clean up
-  return finalName
-    .substring(0, 80) // Limit total length
-    .replace(/-+/g, '-') // Replace multiple hyphens with single
-    .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+  // Fallback: use domain name
+  return domain.replace(/\./g, '-');
 }; 
