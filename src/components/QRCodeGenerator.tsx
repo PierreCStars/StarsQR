@@ -135,22 +135,6 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
 
     setIsGenerating(true);
     
-    // Auto-shorten URL if not already shortened and all required fields are filled
-    console.log('Checking auto-shorten conditions:');
-    console.log('- shortenedUrl:', shortenedUrl);
-    console.log('- formData.url:', formData.url);
-    console.log('- formData.utm_source:', formData.utm_source);
-    console.log('- formData.utm_medium:', formData.utm_medium);
-    console.log('- formData.utm_campaign:', formData.utm_campaign);
-    
-    if (!shortenedUrl && formData.url && formData.utm_source && formData.utm_medium && formData.utm_campaign) {
-      console.log('✅ Auto-shortening URL...');
-      await shortenUrl();
-      console.log('✅ URL shortening completed. New shortenedUrl:', shortenedUrl);
-    } else {
-      console.log('❌ Auto-shorten conditions not met');
-    }
-    
     try {
       console.log('Form data:', formData);
       const utmParams = {
@@ -161,11 +145,38 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
         utm_content: formData.utm_content
       };
 
+      // First, create the URL with UTM parameters
       const urlWithUTM = buildUrlWithUTM(formData.url, utmParams);
-      setFinalUrl(urlWithUTM);
+      console.log('🔗 URL with UTM parameters:', urlWithUTM);
+      
+      // Then shorten the URL with UTM parameters if not already shortened
+      let finalShortUrl = urlWithUTM;
+      if (!shortenedUrl && formData.url && formData.utm_source && formData.utm_medium && formData.utm_campaign) {
+        console.log('✅ Auto-shortening URL with UTM parameters...');
+        try {
+          const shortUrl = createShortUrl(urlWithUTM);
+          const shortCode = shortUrl.split('/').pop() || '';
+          
+          // Save the shortened URL mapping
+          saveShortUrl(shortCode, urlWithUTM);
+          
+          setShortenedUrl(shortUrl);
+          finalShortUrl = shortUrl;
+          console.log('✅ URL with UTM parameters shortened to:', shortUrl);
+        } catch (error) {
+          console.error('❌ Error shortening URL with UTM:', error);
+        }
+      } else {
+        console.log('❌ Auto-shorten conditions not met or already shortened');
+      }
+      
+      setFinalUrl(finalShortUrl);
 
-      // Generate QR code
-      const qrDataUrl = await QRCode.toDataURL(urlWithUTM, {
+      // Generate QR code using the shortened URL (if available) or the URL with UTM
+      const qrCodeUrl = finalShortUrl;
+      console.log('🔗 Generating QR code for URL:', qrCodeUrl);
+      
+      const qrDataUrl = await QRCode.toDataURL(qrCodeUrl, {
         width: 300,
         margin: 2,
         color: {
@@ -178,7 +189,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
 
       // Generate SVG version
       try {
-        const qrSvg = await QRCode.toString(urlWithUTM, {
+        const qrSvg = await QRCode.toString(qrCodeUrl, {
           type: 'svg',
           width: 300,
           margin: 2,
@@ -195,11 +206,11 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
       // Create QR code data for Firebase
       const qrData: any = {
         originalUrl: formData.url,
-        shortUrl: shortenedUrl || formData.url,
+        shortUrl: finalShortUrl, // Use the shortened URL with UTM parameters
         utmSource: formData.utm_source,
         utmMedium: formData.utm_medium,
         utmCampaign: formData.utm_campaign,
-        fullUrl: urlWithUTM,
+        fullUrl: urlWithUTM, // Keep the full URL with UTM for reference
         scanCount: 0
       };
 
@@ -222,13 +233,13 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
       const qrDataForState: QRCodeData = {
         id: firebaseId,
         originalUrl: formData.url,
-        shortUrl: shortenedUrl || formData.url,
+        shortUrl: finalShortUrl, // Use the shortened URL with UTM parameters
         utmSource: formData.utm_source,
         utmMedium: formData.utm_medium,
         utmCampaign: formData.utm_campaign,
         utmTerm: formData.utm_term,
         utmContent: formData.utm_content,
-        fullUrl: urlWithUTM,
+        fullUrl: urlWithUTM, // Keep the full URL with UTM for reference
         scanCount: 0,
         createdAt: new Date(),
         updatedAt: new Date()
