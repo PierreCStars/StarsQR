@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as QRCode from 'qrcode';
-import { Download, Copy, Scissors } from 'lucide-react';
+import { Download, Copy, Scissors, Upload } from 'lucide-react';
 import { StarIcon } from './StarIcon';
 import { QRCodeFormData, QRCodeData } from '../types';
 import { buildUrlWithUTM } from '../utils/utm';
@@ -31,6 +31,9 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [hubspotCampaigns, setHubspotCampaigns] = useState<string[]>([]);
   const [isLoadingCampaigns, setIsLoadingCampaigns] = useState(false);
+  const [csvCampaigns, setCsvCampaigns] = useState<string[]>([]);
+  const [useCsvCampaigns, setUseCsvCampaigns] = useState(false);
+  const [csvFileName, setCsvFileName] = useState<string>('');
 
 
 
@@ -92,6 +95,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
   React.useEffect(() => {
     loadHubSpotCampaigns();
   }, []);
+
 
 
 

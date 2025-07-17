@@ -14,134 +14,65 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const apiKey = process.env.VITE_HUBSPOT_API_KEY;
-
-  if (!apiKey) {
-    return res.status(500).json({ error: 'HubSpot API key not configured' });
-  }
-
   try {
-    console.log('🔗 Fetching HubSpot campaigns...');
+    console.log('✅ Returning campaigns from CSV file...');
     
-    // Try to get contacts with campaign properties first
-    try {
-      const contactsResponse = await fetch(
-        `https://api.hubapi.com/crm/v3/objects/contacts?limit=100&properties=campaign,hs_analytics_source,hs_analytics_first_timestamp`,
-        {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (contactsResponse.ok) {
-        const contactsData = await contactsResponse.json();
-        console.log('🔗 Contacts with campaign properties response:', contactsData);
-        
-        if (contactsData.results && contactsData.results.length > 0) {
-          // Extract unique campaign values from contacts
-          const campaignValues = new Set();
-          contactsData.results.forEach((contact) => {
-            if (contact.properties.campaign) {
-              campaignValues.add(contact.properties.campaign);
-            }
-            // Also check analytics source as potential campaign
-            if (contact.properties.hs_analytics_source) {
-              campaignValues.add(contact.properties.hs_analytics_source);
-            }
-          });
-          
-          const campaigns = Array.from(campaignValues)
-            .filter(name => name && name.trim() !== '')
-            .map((campaignName, index) => ({
-              id: `contact-campaign-${index}`,
-              name: campaignName,
-              type: 'contact_property',
-              status: 'ACTIVE'
-            }));
-          
-          if (campaigns.length > 0) {
-            const sortedCampaigns = campaigns.sort((a, b) => a.name.localeCompare(b.name));
-            console.log('✅ Found campaigns from contacts:', sortedCampaigns.map(c => c.name));
-            return res.status(200).json(sortedCampaigns);
-          }
-        }
-      }
-    } catch (contactsError) {
-      console.log('⚠️ Contact campaign properties not available:', contactsError);
-    }
+    // Return the specific campaigns from the CSV file
+    const campaigns = [
+      { id: '404340267644', name: 'Stars Social', type: 'csv', status: 'ACTIVE' },
+      { id: '378882390800', name: 'Stars HR', type: 'csv', status: 'ACTIVE' },
+      { id: '373400606770', name: 'Robb Report', type: 'csv', status: 'ACTIVE' },
+      { id: '371651042127', name: 'Stars Events', type: 'csv', status: 'ACTIVE' },
+      { id: '369350707023', name: 'Midi Pneu', type: 'csv', status: 'ACTIVE' },
+      { id: '335160641453', name: 'Yachting General', type: 'csv', status: 'ACTIVE' },
+      { id: '314200582318', name: 'Stars Yachting - Ice', type: 'csv', status: 'ACTIVE' },
+      { id: '299002954543', name: 'Dallara Test Drive - Prospects', type: 'csv', status: 'ACTIVE' },
+      { id: '296546114360', name: 'Stars Yachting charter - Ultimate Lady', type: 'csv', status: 'ACTIVE' },
+      { id: '293216223907', name: 'Stars Yachting sales - Azul V', type: 'csv', status: 'ACTIVE' },
+      { id: '285130116703', name: 'Real Estate - L\'Exotique', type: 'csv', status: 'ACTIVE' },
+      { id: '280885937958', name: 'Stars Yachting Sales - Pershing', type: 'csv', status: 'ACTIVE' },
+      { id: '277965209263', name: 'StarsMC-Offers', type: 'csv', status: 'ACTIVE' },
+      { id: '275200202831', name: 'Stars Yachting Anvera', type: 'csv', status: 'ACTIVE' },
+      { id: '268997679722', name: 'Stars Yachting Charter', type: 'csv', status: 'ACTIVE' },
+      { id: '266692714828', name: 'Dallara Stradale', type: 'csv', status: 'ACTIVE' },
+      { id: '257783862562', name: 'Stars Yachting - Yacht Shows 2023', type: 'csv', status: 'ACTIVE' },
+      { id: '255450586129', name: 'Stars Yachting - Belassi', type: 'csv', status: 'ACTIVE' },
+      { id: '248004865100', name: 'Stars Aviation', type: 'csv', status: 'ACTIVE' },
+      { id: '238796830052', name: 'Stars Remarketing Global', type: 'csv', status: 'ACTIVE' },
+      { id: '238771941473', name: 'Stars MC remarketing', type: 'csv', status: 'ACTIVE' },
+      { id: '235851813491', name: 'Group Newsletter', type: 'csv', status: 'ACTIVE' },
+      { id: '228651702343', name: 'Real Estate Newsletters', type: 'csv', status: 'ACTIVE' },
+      { id: '223709670982', name: 'Stars Yachting', type: 'csv', status: 'ACTIVE' },
+      { id: '223494458686', name: 'Le Pneu-Generique', type: 'csv', status: 'ACTIVE' },
+      { id: '218902911919', name: 'Top Marques', type: 'csv', status: 'ACTIVE' },
+      { id: '215443307308', name: 'Réparation de jantes', type: 'csv', status: 'ACTIVE' },
+      { id: '214458015882', name: 'Open Track 27 mars', type: 'csv', status: 'ACTIVE' },
+      { id: '214015487814', name: 'XPEL Test Pierre', type: 'csv', status: 'ACTIVE' },
+      { id: '207723247372', name: 'Rim Repair', type: 'csv', status: 'ACTIVE' },
+      { id: '207360371070', name: 'Xpel window tint', type: 'csv', status: 'ACTIVE' },
+      { id: '118797960508', name: 'LEADS INSTAGRAM', type: 'csv', status: 'ACTIVE' },
+      { id: '69947134629', name: 'Events', type: 'csv', status: 'ACTIVE' },
+      { id: '64154009244', name: 'Dark Ads', type: 'csv', status: 'ACTIVE' },
+      { id: '63193297254', name: 'flyers', type: 'csv', status: 'ACTIVE' },
+      { id: '61703490486', name: 'carte de visite', type: 'csv', status: 'ACTIVE' },
+      { id: '57415898910', name: 'Totem', type: 'csv', status: 'ACTIVE' },
+      { id: '52709433958', name: 'Véhicules Small', type: 'csv', status: 'ACTIVE' },
+      { id: '52629328514', name: 'Vehicules Prestiges', type: 'csv', status: 'ACTIVE' },
+      { id: '40408724340', name: 'Social Media', type: 'csv', status: 'ACTIVE' },
+      { id: '39916558150', name: 'trackdays', type: 'csv', status: 'ACTIVE' },
+      { id: '36523985814', name: 're-engage', type: 'csv', status: 'ACTIVE' },
+      { id: '36244926072', name: 'Porsche et Ferrari Fevrier 2021', type: 'csv', status: 'ACTIVE' },
+      { id: '36243325008', name: 'Concours Top Marques', type: 'csv', status: 'ACTIVE' }
+    ];
     
-    // If no campaigns found in contacts, try to get custom objects
-    try {
-      const customObjectsResponse = await fetch(
-        'https://api.hubapi.com/crm/v3/schemas',
-        {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (customObjectsResponse.ok) {
-        const schemasData = await customObjectsResponse.json();
-        console.log('🔗 Custom objects schemas response:', schemasData);
-        
-        if (schemasData.results) {
-          // Look for any custom objects that might contain campaign data
-          const potentialSchemas = schemasData.results.filter((schema) => 
-            schema.name.toLowerCase().includes('campaign') || 
-            schema.name.toLowerCase().includes('event') ||
-            schema.name.toLowerCase().includes('marketing') ||
-            schema.labels?.singular?.toLowerCase().includes('campaign')
-          );
-          
-          for (const schema of potentialSchemas) {
-            try {
-              const objectsResponse = await fetch(
-                `https://api.hubapi.com/crm/v3/objects/${schema.name}?limit=100`,
-                {
-                  headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json',
-                  },
-                }
-              );
-              
-              if (objectsResponse.ok) {
-                const objectsData = await objectsResponse.json();
-                
-                if (objectsData.results && objectsData.results.length > 0) {
-                  const campaigns = objectsData.results.map((obj) => ({
-                    id: obj.id,
-                    name: obj.properties.name || obj.properties.title || obj.properties.campaign_name || 'Unnamed Campaign',
-                    type: 'custom_object',
-                    status: obj.properties.status || 'ACTIVE'
-                  })).filter(campaign => campaign.name && campaign.name !== 'Unnamed Campaign');
-                  
-                  if (campaigns.length > 0) {
-                    const sortedCampaigns = campaigns.sort((a, b) => a.name.localeCompare(b.name));
-                    console.log('✅ Found campaigns from custom objects:', sortedCampaigns.map(c => c.name));
-                    return res.status(200).json(sortedCampaigns);
-                  }
-                }
-              }
-            } catch (schemaError) {
-              console.log(`⚠️ Could not fetch objects from schema ${schema.name}:`, schemaError);
-            }
-          }
-        }
-      }
-    } catch (customError) {
-      console.log('⚠️ Custom objects not available:', customError);
-    }
+    // Sort campaigns alphabetically
+    const sortedCampaigns = campaigns.sort((a, b) => a.name.localeCompare(b.name));
+    console.log('✅ Returning', sortedCampaigns.length, 'campaigns from CSV');
     
-    console.log('❌ No campaigns found in HubSpot');
-    return res.status(200).json([]); // Return empty array
+    return res.status(200).json(sortedCampaigns);
     
   } catch (error) {
-    console.error('❌ Error fetching HubSpot campaigns:', error);
-    return res.status(500).json({ error: 'Failed to fetch campaigns' });
+    console.error('❌ Error returning campaigns:', error);
+    return res.status(500).json({ error: 'Failed to return campaigns' });
   }
 } 
