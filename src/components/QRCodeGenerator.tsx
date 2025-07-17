@@ -74,6 +74,11 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
       newErrors.utm_campaign = 'UTM Campaign is required';
     }
 
+    // Check if URL has been shortened
+    if (!shortenedUrl) {
+      newErrors.url = 'URL must be shortened before generating QR code. Please fill in all UTM parameters to auto-shorten.';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -165,9 +170,14 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
       const urlWithUTM = buildUrlWithUTM(formData.url, utmParams);
       console.log('🔗 URL with UTM parameters:', urlWithUTM);
       
-      // Use the shortened URL if available, otherwise use the URL with UTM
-      let finalShortUrl = shortenedUrl || urlWithUTM;
-      console.log('🔗 Final URL for QR code:', finalShortUrl);
+      // Only use shortened URL for QR code generation
+      if (!shortenedUrl) {
+        console.log('❌ No shortened URL available, cannot generate QR code');
+        return;
+      }
+      
+      let finalShortUrl = shortenedUrl;
+      console.log('🔗 Using shortened URL for QR code:', finalShortUrl);
       
       setFinalUrl(finalShortUrl);
 
@@ -327,9 +337,13 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
               </div>
             </div>
             {errors.url && <p className="text-red-500 text-sm mt-1">{errors.url}</p>}
-            {shortenedUrl && (
+            {shortenedUrl ? (
               <p className="text-green-600 text-sm mt-1">
                 ✓ URL with UTM parameters automatically shortened! The shortened URL will be used for the QR code.
+              </p>
+            ) : (
+              <p className="text-blue-600 text-sm mt-1">
+                ℹ️ Fill in all UTM parameters to automatically shorten the URL with UTM tracking.
               </p>
             )}
           </div>
@@ -428,13 +442,18 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
 
           <button
             onClick={generateQRCode}
-            disabled={isGenerating}
+            disabled={isGenerating || !shortenedUrl}
             className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {isGenerating ? (
               <>
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 Generating...
+              </>
+            ) : !shortenedUrl ? (
+              <>
+                <StarIcon className="w-4 h-4" />
+                Fill UTM Parameters to Enable
               </>
             ) : (
               <>
