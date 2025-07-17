@@ -252,7 +252,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
     <div className="card max-w-4xl mx-auto">
       <div className="flex items-center gap-2 mb-6">
         <QrCode className="w-6 h-6 text-primary-600" />
-        <h1 className="text-2xl font-bold text-gray-900">QR Code Generator</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Stars QR Code Generator</h1>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

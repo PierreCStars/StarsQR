@@ -1,7 +1,7 @@
 {
   "name": "qr-generator",
   "version": "1.0.0",
-  "description": "QR Code Generator with UTM Tracking",
+  "description": "Stars QR Code Generator with UTM Tracking",
   "private": true,
   "scripts": {
     "dev": "vite",
