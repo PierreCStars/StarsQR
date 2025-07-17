@@ -147,24 +147,25 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
       const urlWithUTM = buildUrlWithUTM(formData.url, utmParams);
       console.log('🔗 URL with UTM parameters:', urlWithUTM);
       
-      // Shorten the URL with UTM parameters
-      console.log('🔗 Shortening URL with UTM parameters...');
+      // Create a short URL for tracking purposes, but use the original URL for the QR code
+      console.log('🔗 Creating short URL for tracking...');
       const shortUrl = createShortUrl(urlWithUTM);
-      console.log('🔗 Generated short URL with UTM:', shortUrl);
+      console.log('🔗 Generated short URL for tracking:', shortUrl);
       
       const shortCode = shortUrl.split('/').pop() || '';
       console.log('🔗 Short code:', shortCode);
       
-      // Save the shortened URL mapping
+      // Save the shortened URL mapping for tracking
       saveShortUrl(shortCode, urlWithUTM);
       
-      let finalShortUrl = shortUrl;
-      console.log('🔗 Using shortened URL for QR code:', finalShortUrl);
+      // Use the original URL with UTM parameters for the QR code (no redirect needed)
+      const qrCodeUrl = urlWithUTM;
+      console.log('🔗 Using original URL with UTM for QR code:', qrCodeUrl);
       
-      setFinalUrl(finalShortUrl);
+      setFinalUrl(qrCodeUrl);
 
       // Generate QR code using the shortened URL (if available) or the URL with UTM
-      const qrCodeUrl = finalShortUrl;
+      // const qrCodeUrl = finalShortUrl; // This line is no longer needed
       console.log('🔗 Generating QR code for URL:', qrCodeUrl);
       
       const qrDataUrl = await QRCode.toDataURL(qrCodeUrl, {
@@ -197,7 +198,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
       // Create QR code data for Firebase
       const qrData: any = {
         originalUrl: formData.url,
-        shortUrl: finalShortUrl, // Use the shortened URL with UTM parameters
+        shortUrl: urlWithUTM, // Use the original URL with UTM parameters
         utmSource: formData.utm_source,
         utmMedium: formData.utm_medium,
         utmCampaign: formData.utm_campaign,
@@ -224,7 +225,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
       const qrDataForState: QRCodeData = {
         id: firebaseId,
         originalUrl: formData.url,
-        shortUrl: finalShortUrl, // Use the shortened URL with UTM parameters
+        shortUrl: urlWithUTM, // Use the original URL with UTM parameters
         utmSource: formData.utm_source,
         utmMedium: formData.utm_medium,
         utmCampaign: formData.utm_campaign,
@@ -363,12 +364,12 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
               />
               <div className="flex items-center gap-2 px-4 text-sm text-gray-500">
                 <Scissors className="w-4 h-4" />
-                <span>Will shorten with UTM</span>
+                <span>Will add UTM tracking</span>
               </div>
             </div>
             {errors.url && <p className="text-red-500 text-sm mt-1">{errors.url}</p>}
             <p className="text-blue-600 text-sm mt-1">
-              ℹ️ URL will be shortened with UTM parameters when you generate the QR code. Default UTM parameters will be used if not specified.
+              ℹ️ URL will be enhanced with UTM parameters when you generate the QR code. Default UTM parameters will be used if not specified.
             </p>
             {pageTitle && (
               <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
@@ -532,7 +533,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated }: QRCodeGeneratorPr
                       <span className="text-white text-xs font-bold">✓</span>
                     </div>
                     <p className="text-green-800 font-medium">
-                      ✓ URL with UTM parameters automatically shortened! The shortened URL will be used for the QR code.
+                      ✓ URL with UTM parameters generated! The QR code will link directly to your target URL with tracking parameters.
                     </p>
                   </div>
                 </div>
