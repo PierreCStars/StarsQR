@@ -13,13 +13,20 @@
         input { padding: 8px; margin: 5px; width: 300px; }
         .error { color: red; }
         .success { color: green; }
+        .warning { color: orange; }
     </style>
 </head>
 <body>
     <h1>QR Code Tracking Diagnostic Tool</h1>
     
     <div class="section">
-        <h2>1. Test URL Lookup</h2>
+        <h2>1. Test API Connection</h2>
+        <button onclick="testAPIConnection()">Test API Connection</button>
+        <div id="apiTestResult" class="log"></div>
+    </div>
+
+    <div class="section">
+        <h2>2. Test URL Lookup</h2>
         <p>Enter a short URL or QR code URL to test if it's in the database:</p>
         <input type="text" id="testUrl" placeholder="e.g., https://qr-generator-xxx.vercel.app/r/AbC123">
         <button onclick="testUrlLookup()">Test URL Lookup</button>
@@ -27,51 +34,51 @@
     </div>
 
     <div class="section">
-        <h2>2. List All QR Codes</h2>
-        <button onclick="listAllQRCodes()">Load All QR Codes</button>
+        <h2>3. List Recent QR Codes</h2>
+        <button onclick="listRecentQRCodes()">Load Recent QR Codes</button>
         <div id="qrCodesList" class="log"></div>
     </div>
 
     <div class="section">
-        <h2>3. Test Scan Tracking</h2>
-        <p>Enter a QR code ID to test scan increment:</p>
-        <input type="text" id="testQRId" placeholder="QR Code ID from above">
-        <button onclick="testScanIncrement()">Test Scan Increment</button>
-        <div id="scanTestResult" class="log"></div>
-    </div>
-
-    <div class="section">
-        <h2>4. Check Recent Scans</h2>
-        <button onclick="checkRecentScans()">Check Recent Scans</button>
-        <div id="recentScans" class="log"></div>
-    </div>
-
-    <div class="section">
-        <h2>5. Manual URL Test</h2>
+        <h2>4. Test Manual URL</h2>
         <p>Test if a URL redirects properly:</p>
         <input type="text" id="manualUrl" placeholder="Short URL to test">
         <button onclick="testManualRedirect()">Test Redirect</button>
         <div id="manualTestResult" class="log"></div>
     </div>
 
-    <script type="module">
-        // Import Firebase
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getFirestore, collection, getDocs, doc, updateDoc, increment, query, where, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    <div class="section">
+        <h2>5. Generate Test QR Code</h2>
+        <p>Generate a test QR code to verify the system:</p>
+        <input type="text" id="testQRUrl" placeholder="https://example.com" value="https://stars.mc">
+        <button onclick="generateTestQR()">Generate Test QR Code</button>
+        <div id="testQRResult" class="log"></div>
+    </div>
 
-        // Firebase config (replace with your actual config)
-        const firebaseConfig = {
-            apiKey: "AIzaSyBxGQqQqQqQqQqQqQqQqQqQqQqQqQqQqQ",
-            authDomain: "qr-generator-5vkixxiuz.firebaseapp.com",
-            projectId: "qr-generator-5vkixxiuz",
-            storageBucket: "qr-generator-5vkixxiuz.appspot.com",
-            messagingSenderId: "123456789012",
-            appId: "1:123456789012:web:abcdefghijklmnop"
+    <script>
+        const API_BASE = 'https://qr-generator-198dc4ugj-pierres-projects-bba7ee64.vercel.app';
+
+        window.testAPIConnection = async function() {
+            const resultDiv = document.getElementById('apiTestResult');
+            
+            try {
+                resultDiv.innerHTML = '🔗 Testing API connection...';
+                
+                // Test the main app endpoint
+                const response = await fetch(`${API_BASE}/api/hubspot-campaigns.js`, {
+                    method: 'GET'
+                });
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = '<span class="success">✅ API connection successful!</span>';
+                } else {
+                    resultDiv.innerHTML = `<span class="warning">⚠️ API responded with status: ${response.status}</span>`;
+                }
+            } catch (error) {
+                console.error('❌ API connection test failed:', error);
+                resultDiv.innerHTML = `<span class="error">❌ API connection failed: ${error.message}</span>`;
+            }
         };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
 
         window.testUrlLookup = async function() {
             const url = document.getElementById('testUrl').value;
@@ -83,117 +90,51 @@
             }
 
             try {
-                resultDiv.innerHTML = '🔍 Searching for URL in database...';
+                resultDiv.innerHTML = '🔍 Testing URL redirect...';
                 
-                // Query for the URL
-                const q = query(collection(db, 'qrCodes'), where('shortUrl', '==', url));
-                const querySnapshot = await getDocs(q);
+                // Test if the URL redirects properly
+                const response = await fetch(url, {
+                    method: 'HEAD',
+                    redirect: 'follow'
+                });
                 
-                if (!querySnapshot.empty) {
-                    const doc = querySnapshot.docs[0];
-                    const data = doc.data();
+                if (response.ok || response.status === 302 || response.status === 301) {
                     resultDiv.innerHTML = `
-                        <span class="success">✅ Found QR Code!</span><br>
-                        <strong>ID:</strong> ${doc.id}<br>
-                        <strong>Original URL:</strong> ${data.originalUrl}<br>
-                        <strong>Short URL:</strong> ${data.shortUrl}<br>
-                        <strong>Full URL:</strong> ${data.fullUrl}<br>
-                        <strong>Scan Count:</strong> ${data.scanCount || 0}<br>
-                        <strong>UTM Source:</strong> ${data.utmSource}<br>
-                        <strong>UTM Medium:</strong> ${data.utmMedium}<br>
-                        <strong>UTM Campaign:</strong> ${data.utmCampaign}<br>
-                        <strong>Created:</strong> ${data.createdAt?.toDate?.() || 'Unknown'}
+                        <span class="success">✅ URL is accessible!</span><br>
+                        <strong>Status:</strong> ${response.status}<br>
+                        <strong>Final URL:</strong> ${response.url}<br>
+                        <strong>Redirected:</strong> ${response.url !== url ? 'Yes' : 'No'}
                     `;
                 } else {
-                    resultDiv.innerHTML = '<span class="error">❌ URL not found in database</span>';
+                    resultDiv.innerHTML = `<span class="warning">⚠️ URL responded with status: ${response.status}</span>`;
                 }
             } catch (error) {
+                console.error('❌ Error testing URL:', error);
                 resultDiv.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
             }
         };
 
-        window.listAllQRCodes = async function() {
+        window.listRecentQRCodes = async function() {
             const resultDiv = document.getElementById('qrCodesList');
             
             try {
-                resultDiv.innerHTML = '📊 Loading QR codes...';
+                resultDiv.innerHTML = '📊 Loading recent QR codes...';
                 
-                const q = query(collection(db, 'qrCodes'), orderBy('createdAt', 'desc'), limit(20));
-                const querySnapshot = await getDocs(q);
+                // Since we can't directly access Firebase, we'll test the main app
+                const response = await fetch(`${API_BASE}`);
                 
-                if (!querySnapshot.empty) {
-                    let html = `<span class="success">📊 Found ${querySnapshot.size} QR codes:</span><br><br>`;
-                    
-                    querySnapshot.docs.forEach((doc, index) => {
-                        const data = doc.data();
-                        html += `
-                            <strong>${index + 1}. ID:</strong> ${doc.id}<br>
-                            <strong>Short URL:</strong> ${data.shortUrl}<br>
-                            <strong>Scan Count:</strong> ${data.scanCount || 0}<br>
-                            <strong>Created:</strong> ${data.createdAt?.toDate?.() || 'Unknown'}<br>
-                            <hr>
-                        `;
-                    });
-                    
-                    resultDiv.innerHTML = html;
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <span class="success">✅ Main app is accessible!</span><br>
+                        <strong>Status:</strong> ${response.status}<br>
+                        <strong>URL:</strong> ${API_BASE}<br><br>
+                        <span class="warning">⚠️ To see actual QR codes, visit the main app and check the Analytics tab.</span>
+                    `;
                 } else {
-                    resultDiv.innerHTML = '<span class="error">❌ No QR codes found in database</span>';
+                    resultDiv.innerHTML = `<span class="error">❌ Main app not accessible: ${response.status}</span>`;
                 }
             } catch (error) {
-                resultDiv.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
-            }
-        };
-
-        window.testScanIncrement = async function() {
-            const qrId = document.getElementById('testQRId').value;
-            const resultDiv = document.getElementById('scanTestResult');
-            
-            if (!qrId) {
-                resultDiv.innerHTML = '<span class="error">Please enter a QR Code ID</span>';
-                return;
-            }
-
-            try {
-                resultDiv.innerHTML = '🔄 Testing scan increment...';
-                
-                const docRef = doc(db, 'qrCodes', qrId);
-                await updateDoc(docRef, {
-                    scanCount: increment(1)
-                });
-                
-                resultDiv.innerHTML = '<span class="success">✅ Scan count incremented successfully!</span>';
-            } catch (error) {
-                resultDiv.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
-            }
-        };
-
-        window.checkRecentScans = async function() {
-            const resultDiv = document.getElementById('recentScans');
-            
-            try {
-                resultDiv.innerHTML = '📈 Checking recent scans...';
-                
-                const q = query(collection(db, 'qrCodeScans'), orderBy('timestamp', 'desc'), limit(10));
-                const querySnapshot = await getDocs(q);
-                
-                if (!querySnapshot.empty) {
-                    let html = `<span class="success">📈 Found ${querySnapshot.size} recent scans:</span><br><br>`;
-                    
-                    querySnapshot.docs.forEach((doc, index) => {
-                        const data = doc.data();
-                        html += `
-                            <strong>${index + 1}. QR Code ID:</strong> ${data.qrCodeId}<br>
-                            <strong>Timestamp:</strong> ${data.timestamp?.toDate?.() || 'Unknown'}<br>
-                            <strong>User Agent:</strong> ${data.userAgent?.substring(0, 50)}...<br>
-                            <hr>
-                        `;
-                    });
-                    
-                    resultDiv.innerHTML = html;
-                } else {
-                    resultDiv.innerHTML = '<span class="error">❌ No recent scans found</span>';
-                }
-            } catch (error) {
+                console.error('❌ Error loading QR codes:', error);
                 resultDiv.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
             }
         };
@@ -215,9 +156,47 @@
                 
                 resultDiv.innerHTML = '<span class="success">✅ Opened URL in new tab. Check if it redirects properly.</span>';
             } catch (error) {
+                console.error('❌ Error in testManualRedirect:', error);
                 resultDiv.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
             }
         };
+
+        window.generateTestQR = async function() {
+            const url = document.getElementById('testQRUrl').value;
+            const resultDiv = document.getElementById('testQRResult');
+            
+            if (!url) {
+                resultDiv.innerHTML = '<span class="error">Please enter a URL</span>';
+                return;
+            }
+
+            try {
+                resultDiv.innerHTML = '🎯 Generating test QR code...';
+                
+                // Open the main app with the URL pre-filled
+                const mainAppUrl = `${API_BASE}?from_extension=true&url=${encodeURIComponent(url)}&utm_source=Test&utm_medium=Diagnostic&utm_campaign=QR_Test`;
+                
+                window.open(mainAppUrl, '_blank');
+                
+                resultDiv.innerHTML = `
+                    <span class="success">✅ Opened main app with test URL!</span><br>
+                    <strong>Test URL:</strong> ${url}<br>
+                    <strong>Main App:</strong> <a href="${mainAppUrl}" target="_blank">${mainAppUrl}</a><br><br>
+                    <span class="warning">⚠️ The main app should auto-generate a QR code. Check if it appears in the Analytics tab.</span>
+                `;
+            } catch (error) {
+                console.error('❌ Error generating test QR:', error);
+                resultDiv.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+            }
+        };
+
+        // Auto-test API connection on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🔗 Testing API connection on page load...');
+            setTimeout(() => {
+                window.testAPIConnection();
+            }, 1000);
+        });
     </script>
 </body>
 </html> 

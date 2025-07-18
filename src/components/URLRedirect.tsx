@@ -28,6 +28,13 @@ export default function URLRedirect({ shortCode }: URLRedirectProps) {
             referrer: document.referrer
           });
           
+          // Send email notification
+          await sendScanNotification(qrCode, {
+            userAgent: navigator.userAgent,
+            referrer: document.referrer,
+            ipAddress: 'Not available (client-side)'
+          });
+          
           setOriginalUrl(qrCode.fullUrl);
           // Redirect after a short delay to show the redirect page
           setTimeout(() => {
@@ -55,6 +62,33 @@ export default function URLRedirect({ shortCode }: URLRedirectProps) {
 
     handleRedirect();
   }, [shortCode]);
+
+  // Function to send scan notification email
+  const sendScanNotification = async (qrCode: any, scanData: any) => {
+    try {
+      console.log('📧 Sending scan notification email...');
+      
+      const response = await fetch('/api/send-scan-notification.js', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          qrCodeData: qrCode,
+          scanData: scanData
+        })
+      });
+
+      if (response.ok) {
+        console.log('✅ Scan notification email sent successfully');
+      } else {
+        console.error('❌ Failed to send scan notification email:', response.status);
+      }
+    } catch (error) {
+      console.error('❌ Error sending scan notification email:', error);
+      // Don't block the redirect if email fails
+    }
+  };
 
   if (isLoading) {
     return (
