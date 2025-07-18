@@ -122,8 +122,14 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
 
   // Handle URL parameters from Chrome extension
   React.useEffect(() => {
+    console.log('🔍 Checking for extension data in URL parameters...');
+    console.log('🔍 Current URL:', window.location.href);
+    console.log('🔍 Search params:', window.location.search);
+    
     const urlParams = new URLSearchParams(window.location.search);
     const fromExtension = urlParams.get('from_extension');
+    
+    console.log('🔍 from_extension parameter:', fromExtension);
     
     if (fromExtension === 'true') {
       console.log('🔗 Extension data detected in URL parameters');
@@ -135,6 +141,8 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
       const utm_campaign = urlParams.get('utm_campaign');
       const utm_term = urlParams.get('utm_term');
       const utm_content = urlParams.get('utm_content');
+      
+      console.log('🔍 Extracted parameters:', { url, utm_source, utm_medium, utm_campaign, utm_term, utm_content });
       
       if (url) {
         console.log('🔗 Pre-filling form with extension data:', {
@@ -160,23 +168,39 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
         // Clear the URL parameters to avoid re-processing
         const newUrl = window.location.pathname;
         window.history.replaceState({}, '', newUrl);
+        console.log('🔗 URL parameters cleared');
+      } else {
+        console.log('❌ No URL found in extension parameters');
       }
+    } else {
+      console.log('🔍 No extension data found in URL parameters');
     }
   }, []);
 
   // Auto-generate QR code when form is pre-filled from extension
   React.useEffect(() => {
+    console.log('🔍 Checking for auto-generation trigger...');
+    console.log('🔍 formData.url:', formData.url);
+    
     const urlParams = new URLSearchParams(window.location.search);
     const fromExtension = urlParams.get('from_extension');
     
+    console.log('🔍 from_extension for auto-gen:', fromExtension);
+    
     if (fromExtension === 'true' && formData.url) {
+      console.log('🔗 Auto-generation conditions met, setting timer...');
       // Auto-generate QR code after a short delay to ensure form is updated
       const timer = setTimeout(() => {
         console.log('🔗 Auto-generating QR code from extension data');
         generateQRCode();
       }, 1500);
       
-      return () => clearTimeout(timer);
+      return () => {
+        console.log('🔗 Clearing auto-generation timer');
+        clearTimeout(timer);
+      };
+    } else {
+      console.log('🔍 Auto-generation conditions not met:', { fromExtension, hasUrl: !!formData.url });
     }
   }, [formData.url]);
 
