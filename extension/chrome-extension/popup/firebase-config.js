@@ -3,12 +3,12 @@
 // You can find these values in your Firebase Console > Project Settings > General > Your apps
 
 const firebaseConfig = {
-  apiKey: "YOUR_FIREBASE_API_KEY_HERE",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyD7sueQsP0m-xhFQ4C3YVUMINEMvyBWI2w",
+  authDomain: "stars-qr-code.firebaseapp.com",
+  projectId: "stars-qr-code",
+  storageBucket: "stars-qr-code.appspot.com",
+  messagingSenderId: "893928368865",
+  appId: "1:893928368865:web:662c503f2e40c4dfdb65a0"
 };
 
 // Initialize Firebase
