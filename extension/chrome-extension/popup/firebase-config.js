@@ -11,11 +11,37 @@ const firebaseConfig = {
   appId: "1:893928368865:web:662c503f2e40c4dfdb65a0"
 };
 
-// Initialize Firebase
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+// Initialize Firebase using CDN approach for Chrome extension
+let app, db, collection, addDoc, serverTimestamp;
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// Load Firebase SDK dynamically
+async function initializeFirebase() {
+  try {
+    // Load Firebase SDK from CDN
+    const firebaseApp = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+    const firebaseFirestore = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    
+    app = firebaseApp.initializeApp(firebaseConfig);
+    db = firebaseFirestore.getFirestore(app);
+    collection = firebaseFirestore.collection;
+    addDoc = firebaseFirestore.addDoc;
+    serverTimestamp = firebaseFirestore.serverTimestamp;
+    
+    console.log('Firebase initialized successfully in extension');
+    return true;
+  } catch (error) {
+    console.error('Failed to initialize Firebase:', error);
+    return false;
+  }
+}
 
-export { db, collection, addDoc, serverTimestamp }; 
+// Export functions that will be available after initialization
+export { initializeFirebase };
+
+// Export async functions that wait for initialization
+export async function getFirebaseFunctions() {
+  if (!db) {
+    await initializeFirebase();
+  }
+  return { db, collection, addDoc, serverTimestamp };
+} 

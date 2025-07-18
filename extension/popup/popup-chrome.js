@@ -12,17 +12,23 @@ class QRCodeGeneratorPopup {
   async init() {
     console.log('Initializing Chrome QR Code Generator popup');
     
+    // Set up event listeners first
+    this.setupEventListeners();
+    console.log('Event listeners set up');
+    
     // Get current tab info
     await this.getCurrentTab();
+    console.log('Current tab info loaded');
     
     // Load campaigns
     await this.loadCampaigns();
-    
-    // Set up event listeners
-    this.setupEventListeners();
+    console.log('Campaigns loaded');
     
     // Load saved settings
     await this.loadSettings();
+    console.log('Settings loaded');
+    
+    console.log('Popup initialization complete');
   }
 
   async getCurrentTab() {
@@ -47,16 +53,25 @@ class QRCodeGeneratorPopup {
   }
 
   async useCurrentPage() {
+    console.log('useCurrentPage called');
     try {
+      console.log('Sending getCurrentTab message to background');
       const response = await chrome.runtime.sendMessage({ action: 'getCurrentTab' });
-      if (response.url) {
+      console.log('Background response:', response);
+      
+      if (response && response.url) {
         this.currentUrl = response.url;
         this.currentTitle = response.title || '';
+        
+        console.log('Setting URL to:', this.currentUrl);
         
         // Update URL input
         const urlInput = document.getElementById('url');
         if (urlInput) {
           urlInput.value = this.currentUrl;
+          console.log('URL input updated');
+        } else {
+          console.error('URL input element not found');
         }
         
         // Auto-generate filename from title
@@ -64,11 +79,12 @@ class QRCodeGeneratorPopup {
         
         this.showMessage('Current page URL loaded!', 'success');
       } else {
+        console.error('No URL in response:', response);
         this.showMessage('Could not get current page URL', 'error');
       }
     } catch (error) {
       console.error('Error getting current tab:', error);
-      this.showMessage('Error getting current page URL', 'error');
+      this.showMessage('Error getting current page URL: ' + error.message, 'error');
     }
   }
 
@@ -155,8 +171,15 @@ class QRCodeGeneratorPopup {
 
     // Use Current Page button
     const useCurrentPageBtn = document.getElementById('useCurrentPage');
+    console.log('Looking for useCurrentPage button:', useCurrentPageBtn);
     if (useCurrentPageBtn) {
-      useCurrentPageBtn.addEventListener('click', () => this.useCurrentPage());
+      useCurrentPageBtn.addEventListener('click', () => {
+        console.log('Use Current Page button clicked');
+        this.useCurrentPage();
+      });
+      console.log('Use Current Page event listener added');
+    } else {
+      console.error('useCurrentPage button not found!');
     }
 
     // Generate QR button
@@ -407,5 +430,15 @@ class QRCodeGeneratorPopup {
 
 // Initialize popup when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM loaded, initializing popup...');
   new QRCodeGeneratorPopup();
-}); 
+});
+
+// Also try immediate execution
+console.log('Popup script loaded');
+if (document.readyState === 'loading') {
+  console.log('Document still loading...');
+} else {
+  console.log('Document already loaded, initializing immediately...');
+  new QRCodeGeneratorPopup();
+} 

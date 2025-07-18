@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Integration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .qr-list {
+            margin-top: 20px;
+        }
+        .qr-item {
+            background: #f8f9fa;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Firebase Integration Test</h1>
+        <p>This page tests the Firebase integration for the Chrome extension.</p>
+
+        <div class="test-section info">
+            <h3>📋 Test Status</h3>
+            <div id="status">Initializing...</div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Test Actions</h3>
+            <button onclick="testConnection()">Test Firebase Connection</button>
+            <button onclick="addTestQR()">Add Test QR Code</button>
+            <button onclick="listQRCodes()">List All QR Codes</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Test Results</h3>
+            <div id="log" class="log">Ready to test...</div>
+        </div>
+
+        <div class="test-section">
+            <h3>📱 QR Codes in Database</h3>
+            <div id="qr-list" class="qr-list">No QR codes loaded yet...</div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration (same as extension)
+        const firebaseConfig = {
+            apiKey: "AIzaSyD7sueQsP0m-xhFQ4C3YVUMINEMvyBWI2w",
+            authDomain: "stars-qr-code.firebaseapp.com",
+            projectId: "stars-qr-code",
+            storageBucket: "stars-qr-code.appspot.com",
+            messagingSenderId: "893928368865",
+            appId: "1:893928368865:web:662c503f2e40c4dfdb65a0"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Global functions for testing
+        window.testConnection = async function() {
+            log('🔍 Testing Firebase connection...');
+            try {
+                const testCollection = collection(db, 'test');
+                log('✅ Firebase initialized successfully');
+                log('📊 Database: ' + firebaseConfig.projectId);
+                log('🔑 API Key: ' + firebaseConfig.apiKey.substring(0, 10) + '...');
+                updateStatus('Firebase connection successful', 'success');
+            } catch (error) {
+                log('❌ Firebase connection failed: ' + error.message);
+                updateStatus('Firebase connection failed', 'error');
+            }
+        };
+
+        window.addTestQR = async function() {
+            log('➕ Adding test QR code to database...');
+            try {
+                const testQRData = {
+                    originalUrl: 'https://example.com/test',
+                    shortUrl: 'https://example.com/test',
+                    utmSource: 'test_page',
+                    utmMedium: 'qr_code',
+                    utmCampaign: 'integration_test',
+                    utmTerm: '',
+                    utmContent: '',
+                    fullUrl: 'https://example.com/test?utm_source=test_page&utm_medium=qr_code&utm_campaign=integration_test',
+                    scanCount: 0,
+                    filename: 'test-qr-code.png',
+                    format: 'png',
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                };
+
+                const docRef = await addDoc(collection(db, 'qrCodes'), testQRData);
+                log('✅ Test QR code added successfully!');
+                log('📄 Document ID: ' + docRef.id);
+                log('📊 Data: ' + JSON.stringify(testQRData, null, 2));
+                updateStatus('Test QR code added successfully', 'success');
+            } catch (error) {
+                log('❌ Failed to add test QR code: ' + error.message);
+                updateStatus('Failed to add test QR code', 'error');
+            }
+        };
+
+        window.listQRCodes = async function() {
+            log('📋 Fetching all QR codes from database...');
+            try {
+                const querySnapshot = await getDocs(collection(db, 'qrCodes'));
+                log('✅ Found ' + querySnapshot.size + ' QR codes in database');
+                
+                const qrList = document.getElementById('qr-list');
+                qrList.innerHTML = '';
+                
+                if (querySnapshot.size === 0) {
+                    qrList.innerHTML = '<p>No QR codes found in database.</p>';
+                    return;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const qrItem = document.createElement('div');
+                    qrItem.className = 'qr-item';
+                    qrItem.innerHTML = `
+                        <strong>ID:</strong> ${doc.id}<br>
+                        <strong>URL:</strong> ${data.originalUrl}<br>
+                        <strong>Campaign:</strong> ${data.utmCampaign || 'N/A'}<br>
+                        <strong>Created:</strong> ${data.createdAt ? data.createdAt.toDate().toLocaleString() : 'N/A'}<br>
+                        <strong>Scans:</strong> ${data.scanCount || 0}
+                    `;
+                    qrList.appendChild(qrItem);
+                });
+
+                updateStatus('QR codes loaded successfully', 'success');
+            } catch (error) {
+                log('❌ Failed to fetch QR codes: ' + error.message);
+                updateStatus('Failed to fetch QR codes', 'error');
+            }
+        };
+
+        window.clearLog = function() {
+            document.getElementById('log').textContent = 'Log cleared...';
+        };
+
+        // Helper functions
+        function log(message) {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function updateStatus(message, type) {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = type;
+        }
+
+        // Auto-test on load
+        window.addEventListener('load', function() {
+            log('🚀 Firebase test page loaded');
+            log('📊 Project: ' + firebaseConfig.projectId);
+            updateStatus('Ready to test', 'info');
+        });
+    </script>
+</body>
+</html> 

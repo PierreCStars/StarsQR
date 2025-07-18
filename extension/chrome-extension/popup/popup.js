@@ -352,8 +352,20 @@ class QRCodeGeneratorPopup {
 
   async saveQRCode(url, filename, format, utmParams) {
     try {
-      // Save to Firebase (main app database)
-      await this.saveToFirebase(url, filename, format, utmParams);
+      // Send to background script to save to Firebase
+      const response = await chrome.runtime.sendMessage({
+        action: 'saveToFirebase',
+        url,
+        filename,
+        format,
+        utmParams
+      });
+      
+      if (response.success) {
+        console.log('QR code saved to Firebase with ID:', response.firebaseId);
+      } else {
+        console.error('Failed to save to Firebase:', response.error);
+      }
       
       // Also save to Chrome storage for local history
       await chrome.runtime.sendMessage({
@@ -379,41 +391,6 @@ class QRCodeGeneratorPopup {
       } catch (chromeError) {
         console.error('Error saving to Chrome storage:', chromeError);
       }
-    }
-  }
-
-  async saveToFirebase(url, filename, format, utmParams) {
-    try {
-      // Import Firebase functions
-      const { db, collection, addDoc, serverTimestamp } = await import('./firebase-config.js');
-      
-      // Prepare data for Firebase (matching main app structure)
-      const qrData = {
-        originalUrl: url,
-        shortUrl: url, // Extension doesn't shorten URLs by default
-        utmSource: utmParams.utm_source || 'chrome_extension',
-        utmMedium: utmParams.utm_medium || 'qr_code',
-        utmCampaign: utmParams.utm_campaign || '',
-        utmTerm: utmParams.utm_term || '',
-        utmContent: utmParams.utm_content || '',
-        fullUrl: url,
-        scanCount: 0,
-        filename: filename,
-        format: format,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      };
-
-      console.log('Saving to Firebase:', qrData);
-      
-      // Add to Firebase
-      const docRef = await addDoc(collection(db, 'qrCodes'), qrData);
-      console.log('QR code saved to Firebase with ID:', docRef.id);
-      
-      return docRef.id;
-    } catch (error) {
-      console.error('Error saving to Firebase:', error);
-      throw error;
     }
   }
 

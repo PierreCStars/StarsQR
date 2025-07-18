@@ -19,13 +19,18 @@ chrome.runtime.onInstalled.addListener((details) => {
 // Handle messages from popup and content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('Background received message:', request);
+  console.log('Request action:', request.action);
   
   switch (request.action) {
     case 'getCurrentTab':
+      console.log('getCurrentTab requested');
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        console.log('Tabs found:', tabs);
         if (tabs[0]) {
+          console.log('Sending response with URL:', tabs[0].url);
           sendResponse({ url: tabs[0].url, title: tabs[0].title });
         } else {
+          console.log('No active tab found');
           sendResponse({ error: 'No active tab found' });
         }
       });
@@ -61,6 +66,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return true;
       
     default:
+      console.log('Unknown action:', request.action);
       sendResponse({ error: 'Unknown action' });
   }
 });

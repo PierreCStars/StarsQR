@@ -6,7 +6,7 @@ The Stars QR Code Generator is a powerful web application that creates QR codes 
 
 **Production URL:** https://qr-generator-koxf19uh8-pierres-projects-bba7ee64.vercel.app
 
-## Features
+## Features 
 
 ### 🎯 Core Features
 - **QR Code Generation** in PNG and SVG formats
