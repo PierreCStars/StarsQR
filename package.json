@@ -16,6 +16,7 @@
   "dependencies": {
     "autoprefixer": "^10.4.16",
     "firebase": "^11.10.0",
+    "firebase-admin": "^13.4.0",
     "lucide-react": "^0.294.0",
     "postcss": "^8.4.32",
     "qrcode": "^1.5.4",
