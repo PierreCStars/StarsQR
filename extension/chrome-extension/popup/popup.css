@@ -13,7 +13,7 @@ body {
 }
 
 .popup-container {
-  width: 400px;
+  width: 500px;
   min-height: 600px;
   padding: 16px;
   background: white;
@@ -38,7 +38,7 @@ body {
 }
 
 .logo h1 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: #1e293b;
 }
@@ -50,7 +50,7 @@ body {
 
 .form-group label {
   display: block;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   color: #374151;
   margin-bottom: 4px;
@@ -62,7 +62,7 @@ body {
   padding: 8px 12px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 12px;
   background: white;
   transition: border-color 0.2s;
 }
@@ -80,7 +80,7 @@ body {
   padding: 8px 16px;
   border: none;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -91,7 +91,7 @@ body {
   color: white;
   width: 100%;
   padding: 12px;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .btn-primary:hover {
@@ -123,7 +123,7 @@ body {
 }
 
 .utm-section h3 {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   margin-bottom: 12px;
   color: #1e293b;
@@ -139,7 +139,7 @@ body {
 }
 
 .qr-result h3 {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   margin-bottom: 12px;
   color: #166534;
@@ -201,7 +201,7 @@ body {
 
 .loading p {
   color: #64748b;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 /* Error */
@@ -215,7 +215,7 @@ body {
 
 .error p {
   color: #dc2626;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 /* Responsive adjustments */
