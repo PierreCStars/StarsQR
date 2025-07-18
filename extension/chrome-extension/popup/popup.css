@@ -13,12 +13,18 @@ body {
 }
 
 .popup-container {
-  width: 600px;
-  min-height: 700px;
-  padding: 24px;
+  width: 400px;
+  min-height: 650px;
+  padding: 20px;
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Force popup to be wider if possible */
+body {
+  min-width: 400px;
+  max-width: 400px;
 }
 
 /* Header */
@@ -56,8 +62,8 @@ body {
 
 /* Quick Start Section */
 .quick-start {
-  margin-bottom: 24px;
-  padding: 16px;
+  margin-bottom: 20px;
+  padding: 14px;
   background: linear-gradient(135deg, #fef3c7, #fde68a);
   border-radius: 8px;
   border: 1px solid #fbbf24;
@@ -175,9 +181,9 @@ body {
 /* UTM Section */
 .utm-section {
   background: #f8fafc;
-  padding: 20px;
+  padding: 16px;
   border-radius: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   border: 1px solid #e2e8f0;
 }
 
@@ -195,7 +201,14 @@ body {
 
 .utm-grid {
   display: grid;
-  gap: 16px;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Make campaign and content full width */
+.utm-grid .form-group:nth-child(3),
+.utm-grid .form-group:nth-child(5) {
+  grid-column: 1 / -1;
 }
 
 /* Generate Section */
