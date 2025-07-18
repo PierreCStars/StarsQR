@@ -17,20 +17,36 @@ let app, db, collection, addDoc, serverTimestamp;
 // Load Firebase SDK dynamically
 async function initializeFirebase() {
   try {
+    console.log('🔥 Initializing Firebase...');
+    console.log('📊 Firebase config:', firebaseConfig);
+    
     // Load Firebase SDK from CDN
+    console.log('📦 Loading Firebase SDK from CDN...');
     const firebaseApp = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
     const firebaseFirestore = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
     
+    console.log('✅ Firebase SDK loaded successfully');
+    
     app = firebaseApp.initializeApp(firebaseConfig);
+    console.log('✅ Firebase app initialized');
+    
     db = firebaseFirestore.getFirestore(app);
+    console.log('✅ Firestore database initialized');
+    
     collection = firebaseFirestore.collection;
     addDoc = firebaseFirestore.addDoc;
     serverTimestamp = firebaseFirestore.serverTimestamp;
     
-    console.log('Firebase initialized successfully in extension');
+    console.log('✅ Firebase functions assigned');
+    console.log('🔥 Firebase initialized successfully in extension');
     return true;
   } catch (error) {
-    console.error('Failed to initialize Firebase:', error);
+    console.error('❌ Failed to initialize Firebase:', error);
+    console.error('❌ Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
     return false;
   }
 }
@@ -51,16 +67,36 @@ export async function getFirebaseFunctions() {
 
 // Also export a simple save function for convenience
 export async function saveQRCodeToFirebase(qrData) {
-  const { db, collection, addDoc, serverTimestamp } = await getFirebaseFunctions();
+  console.log('🔥 saveQRCodeToFirebase called with:', qrData);
   
-  // Add timestamps if not present
-  if (!qrData.createdAt) {
-    qrData.createdAt = serverTimestamp();
+  try {
+    const { db, collection, addDoc, serverTimestamp } = await getFirebaseFunctions();
+    console.log('✅ Firebase functions retrieved');
+    
+    // Add timestamps if not present
+    if (!qrData.createdAt) {
+      qrData.createdAt = serverTimestamp();
+      console.log('📅 Added createdAt timestamp');
+    }
+    if (!qrData.updatedAt) {
+      qrData.updatedAt = serverTimestamp();
+      console.log('📅 Added updatedAt timestamp');
+    }
+    
+    console.log('📊 Final QR data for Firebase:', qrData);
+    console.log('📝 Adding document to qrCodes collection...');
+    
+    const docRef = await addDoc(collection(db, 'qrCodes'), qrData);
+    console.log('✅ Document added successfully with ID:', docRef.id);
+    
+    return docRef.id;
+  } catch (error) {
+    console.error('❌ Error in saveQRCodeToFirebase:', error);
+    console.error('❌ Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
+    throw error;
   }
-  if (!qrData.updatedAt) {
-    qrData.updatedAt = serverTimestamp();
-  }
-  
-  const docRef = await addDoc(collection(db, 'qrCodes'), qrData);
-  return docRef.id;
 } 
