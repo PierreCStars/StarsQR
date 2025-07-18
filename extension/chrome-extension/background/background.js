@@ -100,32 +100,47 @@ chrome.action.onClicked.addListener((tab) => {
 // Firebase saving function using Admin SDK endpoint
 async function saveToFirebase(url, filename, format, utmParams) {
   try {
-    console.log('Saving to Firebase via Admin SDK:', { url, filename, format, utmParams });
+    console.log('🔥 Saving to Firebase via Admin SDK:', { url, filename, format, utmParams });
 
     // Use the simple endpoint (uses existing Firebase config)
-    const response = await fetch('https://qr-generator-epe32ngzi-pierres-projects-bba7ee64.vercel.app/api/save-qr-code-simple', {
+    const apiUrl = 'https://qr-generator-epe32ngzi-pierres-projects-bba7ee64.vercel.app/api/save-qr-code-simple';
+    console.log('📡 Making API call to:', apiUrl);
+    
+    const requestBody = {
+      url,
+      filename,
+      format,
+      utmParams
+    };
+    console.log('📤 Request body:', requestBody);
+
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        url,
-        filename,
-        format,
-        utmParams
-      })
+      body: JSON.stringify(requestBody)
     });
+
+    console.log('📡 Response status:', response.status);
+    console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('❌ API error response:', errorText);
       throw new Error(`API error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     const result = await response.json();
-    console.log('Firebase save successful via Admin SDK:', result);
+    console.log('✅ Firebase save successful via Admin SDK:', result);
     return result.firebaseId;
   } catch (error) {
-    console.error('Error saving to Firebase via Admin SDK:', error);
+    console.error('❌ Error saving to Firebase via Admin SDK:', error);
+    console.error('❌ Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
     throw error;
   }
 }
