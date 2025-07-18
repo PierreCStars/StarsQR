@@ -23,18 +23,25 @@
         // Function to save QR code
         window.saveQRCode = async function(qrData) {
             try {
-                console.log('🔥 Saving QR code:', qrData);
+                console.log('🔥 Helper page: saveQRCode called with:', qrData);
+                console.log('🔥 Helper page: Firebase app initialized:', !!app);
+                console.log('🔥 Helper page: Firestore db initialized:', !!db);
                 
                 // Add timestamps if not present
                 if (!qrData.createdAt) {
                     qrData.createdAt = serverTimestamp();
+                    console.log('📅 Added createdAt timestamp');
                 }
                 if (!qrData.updatedAt) {
                     qrData.updatedAt = serverTimestamp();
+                    console.log('📅 Added updatedAt timestamp');
                 }
                 
+                console.log('📊 Final QR data for Firebase:', qrData);
+                console.log('📝 Adding document to qrCodes collection...');
+                
                 const docRef = await addDoc(collection(db, 'qrCodes'), qrData);
-                console.log('✅ QR code saved successfully with ID:', docRef.id);
+                console.log('✅ Document added successfully with ID:', docRef.id);
                 
                 return {
                     success: true,
@@ -42,7 +49,12 @@
                     message: 'QR code saved to database'
                 };
             } catch (error) {
-                console.error('❌ Error saving QR code:', error);
+                console.error('❌ Helper page: Error saving QR code:', error);
+                console.error('❌ Helper page: Error details:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
                 return {
                     success: false,
                     error: error.message
@@ -51,6 +63,9 @@
         };
 
         console.log('✅ Firebase Save Helper loaded successfully');
+        console.log('✅ saveQRCode function available:', typeof window.saveQRCode === 'function');
+        console.log('✅ Firebase app initialized:', !!app);
+        console.log('✅ Firestore db initialized:', !!db);
     </script>
 </head>
 <body>

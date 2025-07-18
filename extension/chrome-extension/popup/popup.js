@@ -360,12 +360,15 @@ class QRCodeGeneratorPopup {
       let helperSuccess = false;
       try {
         // Open the helper page in a new tab
+        console.log('📂 Opening helper page...');
         const helperTab = await chrome.tabs.create({
           url: chrome.runtime.getURL('firebase-save.html'),
           active: false
         });
+        console.log('✅ Helper tab created with ID:', helperTab.id);
         
         // Wait for the page to load
+        console.log('⏳ Waiting for helper page to load...');
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         // Prepare QR data
@@ -385,31 +388,63 @@ class QRCodeGeneratorPopup {
         
         console.log('📊 Prepared QR data:', qrData);
         
+        // Check if helper page is ready
+        console.log('🔍 Checking if helper page is ready...');
+        try {
+          const checkResult = await chrome.scripting.executeScript({
+            target: { tabId: helperTab.id },
+            func: () => {
+              return {
+                saveQRCodeExists: typeof window.saveQRCode === 'function',
+                firebaseReady: typeof window.firebase !== 'undefined'
+              };
+            }
+          });
+          console.log('📋 Helper page status:', checkResult[0].result);
+        } catch (checkError) {
+          console.error('❌ Failed to check helper page status:', checkError);
+        }
+        
         // Execute script in the helper page to save QR code
+        console.log('🚀 Executing save script in helper page...');
         const result = await chrome.scripting.executeScript({
           target: { tabId: helperTab.id },
           func: (qrData) => {
-            return window.saveQRCode(qrData);
+            console.log('🔥 Helper page: saveQRCode called with:', qrData);
+            if (typeof window.saveQRCode === 'function') {
+              return window.saveQRCode(qrData);
+            } else {
+              console.error('❌ Helper page: saveQRCode function not found');
+              return { success: false, error: 'saveQRCode function not found' };
+            }
           },
           args: [qrData]
         });
         
         console.log('📡 Helper page result:', result);
         
-        if (result && result[0] && result[0].success) {
-          console.log('✅ QR code saved successfully with ID:', result[0].firebaseId);
+        if (result && result[0] && result[0].result && result[0].result.success) {
+          console.log('✅ QR code saved successfully with ID:', result[0].result.firebaseId);
           this.showMessage('QR code saved to database!', 'success');
           helperSuccess = true;
         } else {
           console.error('❌ Failed to save via helper page:', result);
+          const errorMsg = result?.[0]?.result?.error || 'Unknown error';
+          console.error('❌ Error details:', errorMsg);
           this.showMessage('Failed to save to database, saved locally instead', 'warning');
         }
         
         // Close the helper tab
+        console.log('🔒 Closing helper tab...');
         chrome.tabs.remove(helperTab.id);
         
       } catch (helperError) {
         console.error('❌ Helper page approach failed:', helperError);
+        console.error('❌ Error details:', {
+          name: helperError.name,
+          message: helperError.message,
+          stack: helperError.stack
+        });
         this.showMessage('Failed to save to database, saved locally instead', 'warning');
       }
       
