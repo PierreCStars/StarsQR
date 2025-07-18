@@ -210,14 +210,13 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
       // Save the shortened URL mapping for tracking
       saveShortUrl(shortCode, urlWithUTM);
       
-      // Use the original URL with UTM parameters for the QR code (no redirect needed)
-      const qrCodeUrl = urlWithUTM;
-      console.log('🔗 Using original URL with UTM for QR code:', qrCodeUrl);
+      // Use the short URL for the QR code to enable tracking
+      const qrCodeUrl = shortUrl;
+      console.log('🔗 Using short URL for QR code tracking:', qrCodeUrl);
       
       setFinalUrl(qrCodeUrl);
 
-      // Generate QR code using the shortened URL (if available) or the URL with UTM
-      // const qrCodeUrl = finalShortUrl; // This line is no longer needed
+      // Generate QR code using the short URL for tracking
       console.log('🔗 Generating QR code for URL:', qrCodeUrl);
       
       const qrDataUrl = await QRCode.toDataURL(qrCodeUrl, {
@@ -250,7 +249,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
       // Create QR code data for Firebase
       const qrData: any = {
         originalUrl: formData.url,
-        shortUrl: urlWithUTM, // Use the original URL with UTM parameters
+        shortUrl: shortUrl, // Use the short URL for tracking
         utmSource: formData.utm_source,
         utmMedium: formData.utm_medium,
         utmCampaign: formData.utm_campaign,
@@ -273,7 +272,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
       const qrDataForState: QRCodeData = {
         id: firebaseId,
         originalUrl: formData.url,
-        shortUrl: urlWithUTM, // Use the original URL with UTM parameters
+        shortUrl: shortUrl, // Use the short URL for tracking
         utmSource: formData.utm_source,
         utmMedium: formData.utm_medium,
         utmCampaign: formData.utm_campaign,
