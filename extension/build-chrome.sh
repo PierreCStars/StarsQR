@@ -18,7 +18,8 @@ cp manifest-chrome.json "$BUILD_DIR/manifest.json"
 
 # Copy background script
 echo "🔧 Copying background script..."
-cp background-chrome.js "$BUILD_DIR/background.js"
+mkdir -p "$BUILD_DIR/background"
+cp background-chrome.js "$BUILD_DIR/background/background.js"
 
 # Copy popup files
 echo "📱 Copying popup files..."
