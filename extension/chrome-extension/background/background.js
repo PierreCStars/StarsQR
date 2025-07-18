@@ -103,7 +103,7 @@ async function saveToFirebase(url, filename, format, utmParams) {
     console.log('Saving to Firebase via API:', { url, filename, format, utmParams });
 
     // Use the serverless API endpoint
-    const response = await fetch('https://your-vercel-domain.vercel.app/api/save-qr-code', {
+    const response = await fetch('https://qr-generator-8rxt1o5br-pierres-projects-bba7ee64.vercel.app/api/save-qr-code', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
