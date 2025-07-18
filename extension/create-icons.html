@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Generator</title>
+</head>
+<body>
+    <h1>Icon Generator</h1>
+    <p>Right-click on each icon below and "Save image as" to save as PNG:</p>
+    
+    <div style="margin: 20px;">
+        <h3>16x16</h3>
+        <canvas id="canvas16" width="16" height="16"></canvas>
+        <br><br>
+        
+        <h3>32x32</h3>
+        <canvas id="canvas32" width="32" height="32"></canvas>
+        <br><br>
+        
+        <h3>48x48</h3>
+        <canvas id="canvas48" width="48" height="48"></canvas>
+        <br><br>
+        
+        <h3>128x128</h3>
+        <canvas id="canvas128" width="128" height="128"></canvas>
+    </div>
+
+    <script>
+        function drawIcon(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // Background
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Star
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            
+            const centerX = size / 2;
+            const centerY = size / 2;
+            const outerRadius = size * 0.35;
+            const innerRadius = size * 0.15;
+            const spikes = 5;
+            
+            for (let i = 0; i < spikes * 2; i++) {
+                const angle = (i * Math.PI) / spikes;
+                const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // Generate all icons
+        drawIcon('canvas16', 16);
+        drawIcon('canvas32', 32);
+        drawIcon('canvas48', 48);
+        drawIcon('canvas128', 128);
+        
+        // Add download buttons
+        function downloadCanvas(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        // Add download buttons
+        document.body.innerHTML += `
+            <div style="margin: 20px;">
+                <h3>Download Icons:</h3>
+                <button onclick="downloadCanvas('canvas16', 'icon16.png')">Download 16x16</button>
+                <button onclick="downloadCanvas('canvas32', 'icon32.png')">Download 32x32</button>
+                <button onclick="downloadCanvas('canvas48', 'icon48.png')">Download 48x48</button>
+                <button onclick="downloadCanvas('canvas128', 'icon128.png')">Download 128x128</button>
+            </div>
+        `;
+    </script>
+</body>
+</html> 
