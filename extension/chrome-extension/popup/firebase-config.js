@@ -14,28 +14,28 @@ const firebaseConfig = {
 // Initialize Firebase using CDN approach for Chrome extension
 let app, db, collection, addDoc, serverTimestamp;
 
-// Load Firebase SDK dynamically
+// Load Firebase SDK dynamically - using a different approach for Chrome extensions
 async function initializeFirebase() {
   try {
     console.log('🔥 Initializing Firebase...');
     console.log('📊 Firebase config:', firebaseConfig);
     
-    // Load Firebase SDK from CDN
-    console.log('📦 Loading Firebase SDK from CDN...');
-    const firebaseApp = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
-    const firebaseFirestore = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-    
-    console.log('✅ Firebase SDK loaded successfully');
-    
-    app = firebaseApp.initializeApp(firebaseConfig);
-    console.log('✅ Firebase app initialized');
-    
-    db = firebaseFirestore.getFirestore(app);
-    console.log('✅ Firestore database initialized');
-    
-    collection = firebaseFirestore.collection;
-    addDoc = firebaseFirestore.addDoc;
-    serverTimestamp = firebaseFirestore.serverTimestamp;
+    // For Chrome extensions, we need to use a different approach
+    // Let's try using the Firebase SDK that might be available globally
+    if (typeof firebase !== 'undefined') {
+      console.log('✅ Firebase SDK found globally');
+      app = firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      collection = firebase.firestore().collection;
+      addDoc = firebase.firestore().addDoc;
+      serverTimestamp = firebase.firestore.FieldValue.serverTimestamp;
+    } else {
+      // Fallback: try to load from a local copy or use a different method
+      console.log('📦 Firebase SDK not found globally, trying alternative approach...');
+      
+      // For now, let's throw an error and rely on the API endpoint
+      throw new Error('Firebase SDK not available in extension context - using API fallback');
+    }
     
     console.log('✅ Firebase functions assigned');
     console.log('🔥 Firebase initialized successfully in extension');

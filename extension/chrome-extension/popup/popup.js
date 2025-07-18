@@ -354,73 +354,33 @@ class QRCodeGeneratorPopup {
     console.log('🔍 saveQRCode called with:', { url, filename, format, utmParams });
     
     try {
-      // Try direct Firebase save first using the existing config
-      let firebaseSuccess = false;
+      // Skip direct Firebase save due to CSP restrictions in Chrome extensions
+      // Go straight to API endpoint
+      console.log('🔄 Using API endpoint due to Chrome extension CSP restrictions...');
+      
+      let apiSuccess = false;
       try {
-        console.log('🔥 Attempting direct Firebase save...');
-        
-        // Use the existing Firebase config file
-        const { saveQRCodeToFirebase } = await import('./firebase-config.js');
-        console.log('✅ Firebase config imported successfully');
-
-        // Prepare data for Firebase (matching main app structure)
-        const qrData = {
-          originalUrl: url,
-          shortUrl: url, // Extension doesn't shorten URLs by default
-          utmSource: utmParams?.utm_source || 'chrome_extension',
-          utmMedium: utmParams?.utm_medium || 'qr_code',
-          utmCampaign: utmParams?.utm_campaign || '',
-          utmTerm: utmParams?.utm_term || '',
-          utmContent: utmParams?.utm_content || '',
-          fullUrl: url,
-          scanCount: 0,
-          filename: filename || 'qr-code.png',
-          format: format || 'png'
-        };
-
-        console.log('📊 Prepared QR data for Firebase:', qrData);
-
-        // Add to Firebase using convenience function
-        const docId = await saveQRCodeToFirebase(qrData);
-        
-        console.log('✅ QR code saved successfully with ID:', docId);
-        firebaseSuccess = true;
-        this.showMessage('QR code saved to database!', 'success');
-      } catch (firebaseError) {
-        console.error('❌ Direct Firebase save failed:', firebaseError);
-        console.error('❌ Error details:', {
-          name: firebaseError.name,
-          message: firebaseError.message,
-          stack: firebaseError.stack
+        const response = await chrome.runtime.sendMessage({
+          action: 'saveToFirebase',
+          url,
+          filename,
+          format,
+          utmParams
         });
-        firebaseSuccess = false;
-      }
-
-      // Fallback to API endpoint if direct save failed
-      if (!firebaseSuccess) {
-        console.log('🔄 Trying API endpoint as fallback...');
-        try {
-          const response = await chrome.runtime.sendMessage({
-            action: 'saveToFirebase',
-            url,
-            filename,
-            format,
-            utmParams
-          });
-          
-          console.log('📡 API response:', response);
-          
-          if (response && response.success) {
-            console.log('✅ QR code saved to Firebase via API with ID:', response.firebaseId);
-            this.showMessage('QR code saved to database!', 'success');
-          } else {
-            console.error('❌ Failed to save to Firebase via API:', response?.error || 'No response');
-            this.showMessage('Failed to save to database, saved locally instead', 'warning');
-          }
-        } catch (apiError) {
-          console.error('❌ API endpoint call failed:', apiError);
+        
+        console.log('📡 API response:', response);
+        
+        if (response && response.success) {
+          console.log('✅ QR code saved to Firebase via API with ID:', response.firebaseId);
+          this.showMessage('QR code saved to database!', 'success');
+          apiSuccess = true;
+        } else {
+          console.error('❌ Failed to save to Firebase via API:', response?.error || 'No response');
           this.showMessage('Failed to save to database, saved locally instead', 'warning');
         }
+      } catch (apiError) {
+        console.error('❌ API endpoint call failed:', apiError);
+        this.showMessage('Failed to save to database, saved locally instead', 'warning');
       }
       
       // Also save to Chrome storage for local history
