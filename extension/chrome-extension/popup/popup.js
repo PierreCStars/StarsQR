@@ -354,32 +354,62 @@ class QRCodeGeneratorPopup {
     console.log('🔍 saveQRCode called with:', { url, filename, format, utmParams });
     
     try {
-      // Skip direct Firebase save due to CSP restrictions in Chrome extensions
-      // Go straight to API endpoint
-      console.log('🔄 Using API endpoint due to Chrome extension CSP restrictions...');
+      // Use Firebase helper page instead of API endpoint
+      console.log('🔄 Using Firebase helper page...');
       
-      let apiSuccess = false;
+      let helperSuccess = false;
       try {
-        const response = await chrome.runtime.sendMessage({
-          action: 'saveToFirebase',
-          url,
-          filename,
-          format,
-          utmParams
+        // Open the helper page in a new tab
+        const helperTab = await chrome.tabs.create({
+          url: chrome.runtime.getURL('firebase-save.html'),
+          active: false
         });
         
-        console.log('📡 API response:', response);
+        // Wait for the page to load
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
-        if (response && response.success) {
-          console.log('✅ QR code saved to Firebase via API with ID:', response.firebaseId);
+        // Prepare QR data
+        const qrData = {
+          originalUrl: url,
+          shortUrl: url,
+          utmSource: utmParams?.utm_source || 'chrome_extension',
+          utmMedium: utmParams?.utm_medium || 'qr_code',
+          utmCampaign: utmParams?.utm_campaign || '',
+          utmTerm: utmParams?.utm_term || '',
+          utmContent: utmParams?.utm_content || '',
+          fullUrl: url,
+          scanCount: 0,
+          filename: filename || 'qr-code.png',
+          format: format || 'png'
+        };
+        
+        console.log('📊 Prepared QR data:', qrData);
+        
+        // Execute script in the helper page to save QR code
+        const result = await chrome.scripting.executeScript({
+          target: { tabId: helperTab.id },
+          func: (qrData) => {
+            return window.saveQRCode(qrData);
+          },
+          args: [qrData]
+        });
+        
+        console.log('📡 Helper page result:', result);
+        
+        if (result && result[0] && result[0].success) {
+          console.log('✅ QR code saved successfully with ID:', result[0].firebaseId);
           this.showMessage('QR code saved to database!', 'success');
-          apiSuccess = true;
+          helperSuccess = true;
         } else {
-          console.error('❌ Failed to save to Firebase via API:', response?.error || 'No response');
+          console.error('❌ Failed to save via helper page:', result);
           this.showMessage('Failed to save to database, saved locally instead', 'warning');
         }
-      } catch (apiError) {
-        console.error('❌ API endpoint call failed:', apiError);
+        
+        // Close the helper tab
+        chrome.tabs.remove(helperTab.id);
+        
+      } catch (helperError) {
+        console.error('❌ Helper page approach failed:', helperError);
         this.showMessage('Failed to save to database, saved locally instead', 'warning');
       }
       
@@ -502,4 +532,4 @@ if (document.readyState === 'loading') {
 } else {
   console.log('Document already loaded, initializing immediately...');
   new QRCodeGeneratorPopup();
-} 
+}

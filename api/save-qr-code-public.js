@@ -2,14 +2,14 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
-// Firebase configuration
+// Firebase configuration - using the actual config values
 const firebaseConfig = {
-  apiKey: process.env.VITE_FIREBASE_API_KEY,
-  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.VITE_FIREBASE_APP_ID
+  apiKey: "AIzaSyD7sueQsP0m-xhFQ4C3YVUMINEMvyBWI2w",
+  authDomain: "stars-qr-code.firebaseapp.com",
+  projectId: "stars-qr-code",
+  storageBucket: "stars-qr-code.appspot.com",
+  messagingSenderId: "893928368865",
+  appId: "1:893928368865:web:662c503f2e40c4dfdb65a0"
 };
 
 // Initialize Firebase
@@ -39,6 +39,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'URL is required' });
     }
 
+    console.log('📝 Saving QR code from extension:', { url, filename, format, utmParams });
+
     // Prepare data for Firebase (matching main app structure)
     const qrData = {
       originalUrl: url,
@@ -56,12 +58,12 @@ export default async function handler(req, res) {
       updatedAt: serverTimestamp()
     };
 
-    console.log('Saving QR code from extension:', qrData);
+    console.log('📊 Prepared QR data:', qrData);
 
     // Add to Firebase
     const docRef = await addDoc(collection(db, 'qrCodes'), qrData);
     
-    console.log('QR code saved successfully with ID:', docRef.id);
+    console.log('✅ QR code saved successfully with ID:', docRef.id);
 
     res.status(200).json({
       success: true,
@@ -70,7 +72,7 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Error saving QR code:', error);
+    console.error('❌ Error saving QR code:', error);
     res.status(500).json({
       success: false,
       error: error.message

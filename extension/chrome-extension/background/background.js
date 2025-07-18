@@ -97,13 +97,13 @@ chrome.action.onClicked.addListener((tab) => {
   // Could open popup programmatically or perform other actions
 });
 
-// Firebase saving function using Admin SDK endpoint
+// Firebase saving function using public API endpoint
 async function saveToFirebase(url, filename, format, utmParams) {
   try {
-    console.log('🔥 Saving to Firebase via Admin SDK:', { url, filename, format, utmParams });
+    console.log('🔥 Saving to Firebase via public API:', { url, filename, format, utmParams });
 
-    // Use the simple endpoint (uses existing Firebase config)
-    const apiUrl = 'https://qr-generator-epe32ngzi-pierres-projects-bba7ee64.vercel.app/api/save-qr-code-simple';
+    // Use the public endpoint (no authentication required)
+    const apiUrl = 'https://qr-generator-epe32ngzi-pierres-projects-bba7ee64.vercel.app/api/save-qr-code-public';
     console.log('📡 Making API call to:', apiUrl);
     
     const requestBody = {
@@ -132,10 +132,10 @@ async function saveToFirebase(url, filename, format, utmParams) {
     }
 
     const result = await response.json();
-    console.log('✅ Firebase save successful via Admin SDK:', result);
+    console.log('✅ Firebase save successful via public API:', result);
     return result.firebaseId;
   } catch (error) {
-    console.error('❌ Error saving to Firebase via Admin SDK:', error);
+    console.error('❌ Error saving to Firebase via public API:', error);
     console.error('❌ Error details:', {
       name: error.name,
       message: error.message,
