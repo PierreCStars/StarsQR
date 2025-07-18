@@ -102,8 +102,8 @@ async function saveToFirebase(url, filename, format, utmParams) {
   try {
     console.log('🔥 Saving to Firebase via working API:', { url, filename, format, utmParams });
 
-    // Use the working endpoint (uses Firebase Admin SDK)
-    const apiUrl = 'https://qr-generator-epe32ngzi-pierres-projects-bba7ee64.vercel.app/api/save-qr-code-working';
+    // Use the working endpoint (uses Firebase Admin SDK) - new production URL
+    const apiUrl = 'https://qr-generator-bxkyfmx4z-pierres-projects-bba7ee64.vercel.app/api/save-qr-code-working';
     console.log('📡 Making API call to:', apiUrl);
     
     const requestBody = {
