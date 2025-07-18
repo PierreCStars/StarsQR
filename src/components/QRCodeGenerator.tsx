@@ -123,18 +123,10 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
 
   // Handle URL parameters from Chrome extension
   React.useEffect(() => {
-    console.log('🔍 Checking for extension data in URL parameters...');
-    console.log('🔍 Current URL:', window.location.href);
-    console.log('🔍 Search params:', window.location.search);
-    
     const urlParams = new URLSearchParams(window.location.search);
     const fromExtension = urlParams.get('from_extension');
     
-    console.log('🔍 from_extension parameter:', fromExtension);
-    
     if (fromExtension === 'true') {
-      console.log('🔗 Extension data detected in URL parameters');
-      
       // Set extension flag
       setIsFromExtension(true);
       
@@ -146,18 +138,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
       const utm_term = urlParams.get('utm_term');
       const utm_content = urlParams.get('utm_content');
       
-      console.log('🔍 Extracted parameters:', { url, utm_source, utm_medium, utm_campaign, utm_term, utm_content });
-      
       if (url) {
-        console.log('🔗 Pre-filling form with extension data:', {
-          url,
-          utm_source,
-          utm_medium,
-          utm_campaign,
-          utm_term,
-          utm_content
-        });
-        
         // Pre-fill the form with extension data
         setFormData(prev => ({
           ...prev,
@@ -172,72 +153,31 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
         // Clear the URL parameters to avoid re-processing
         const newUrl = window.location.pathname;
         window.history.replaceState({}, '', newUrl);
-        console.log('🔗 URL parameters cleared');
-      } else {
-        console.log('❌ No URL found in extension parameters');
       }
-    } else {
-      console.log('🔍 No extension data found in URL parameters');
     }
   }, []);
 
   // Auto-generate QR code when form is pre-filled from extension
   React.useEffect(() => {
-    console.log('🔍 Checking for auto-generation trigger...');
-    console.log('🔍 formData.url:', formData.url);
-    console.log('🔍 isFromExtension:', isFromExtension);
-    
     if (isFromExtension && formData.url) {
-      console.log('🔗 Auto-generation conditions met, setting timer...');
       // Auto-generate QR code after a short delay to ensure form is updated
       const timer = setTimeout(() => {
-        console.log('🔗 Auto-generating QR code from extension data');
         generateQRCode();
         // Reset the extension flag after auto-generation
         setIsFromExtension(false);
       }, 1500);
       
-      return () => {
-        console.log('🔗 Clearing auto-generation timer');
-        clearTimeout(timer);
-      };
-    } else {
-      console.log('🔍 Auto-generation conditions not met:', { isFromExtension, hasUrl: !!formData.url });
+      return () => clearTimeout(timer);
     }
   }, [formData.url, isFromExtension]);
 
-  // Test function to simulate extension data
-  const testExtensionData = () => {
-    console.log('🧪 Testing extension data simulation...');
-    const testUrl = 'https://www.stars.mc/voitures/occasion/monaco/porsche/911/essence/coupe-992-3-7-650ch-turbo-s-pdk/2893644/';
-    const testParams = {
-      url: testUrl,
-      utm_source: 'chrome_extension',
-      utm_medium: 'qr_code',
-      utm_campaign: 'Dark Ads',
-      utm_term: '',
-      utm_content: '',
-      from_extension: 'true'
-    };
-    
-    // Simulate URL parameters
-    const params = new URLSearchParams(testParams);
-    const testUrlWithParams = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-    
-    console.log('🧪 Test URL:', testUrlWithParams);
-    window.location.href = testUrlWithParams;
-  };
+
 
 
 
 
   const generateQRCode = async () => {
-    console.log('🚀 Starting QR code generation...');
-    console.log('🚀 Form data:', formData);
-    console.log('🚀 Is from extension:', isFromExtension);
-    
     if (!validateForm()) {
-      console.log('❌ Form validation failed');
       return;
     }
 
@@ -326,13 +266,8 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
         qrData.utmContent = formData.utm_content;
       }
 
-      console.log('💾 QR code generated, saving to Firebase...');
-      console.log('💾 QR data to save:', JSON.stringify(qrData, null, 2));
-      
       // Save to Firebase
-      console.log('💾 Calling createQRCode...');
       const firebaseId = await createQRCode(qrData);
-      console.log('✅ Firebase ID:', firebaseId);
       
       // Create QR code data for local state
       const qrDataForState: QRCodeData = {
@@ -350,7 +285,6 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
         updatedAt: new Date()
       };
 
-      console.log('📞 Calling onQRCodeGenerated with:', qrDataForState);
       onQRCodeGenerated(qrDataForState);
       
       // Show success message
@@ -360,15 +294,8 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
       setTimeout(() => {
         setShowSuccessMessage(false);
       }, 5000);
-      
-      console.log('🎉 QR code generation completed successfully');
     } catch (error) {
-      console.error('❌ Error generating QR code:', error);
-      console.error('❌ Error details:', {
-        name: error instanceof Error ? error.name : 'Unknown',
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : 'No stack trace'
-      });
+      console.error('Error generating QR code:', error);
     } finally {
       setIsGenerating(false);
     }
@@ -467,21 +394,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Form Section */}
         <div className="space-y-6">
-          {/* Test Extension Button */}
-          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium text-yellow-800">🧪 Extension Test</h3>
-                <p className="text-xs text-yellow-700 mt-1">Test the Chrome extension integration</p>
-              </div>
-              <button
-                onClick={testExtensionData}
-                className="px-3 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600 transition-colors"
-              >
-                Test Extension
-              </button>
-            </div>
-          </div>
+
           <div>
             <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-2">
               Target URL *
