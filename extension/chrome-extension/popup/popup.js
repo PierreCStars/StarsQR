@@ -12,17 +12,23 @@ class QRCodeGeneratorPopup {
   async init() {
     console.log('Initializing Chrome QR Code Generator popup');
     
+    // Set up event listeners first
+    this.setupEventListeners();
+    console.log('Event listeners set up');
+    
     // Get current tab info
     await this.getCurrentTab();
+    console.log('Current tab info loaded');
     
     // Load campaigns
     await this.loadCampaigns();
-    
-    // Set up event listeners
-    this.setupEventListeners();
+    console.log('Campaigns loaded');
     
     // Load saved settings
     await this.loadSettings();
+    console.log('Settings loaded');
+    
+    console.log('Popup initialization complete');
   }
 
   async getCurrentTab() {
@@ -47,16 +53,25 @@ class QRCodeGeneratorPopup {
   }
 
   async useCurrentPage() {
+    console.log('useCurrentPage called');
     try {
+      console.log('Sending getCurrentTab message to background');
       const response = await chrome.runtime.sendMessage({ action: 'getCurrentTab' });
-      if (response.url) {
+      console.log('Background response:', response);
+      
+      if (response && response.url) {
         this.currentUrl = response.url;
         this.currentTitle = response.title || '';
+        
+        console.log('Setting URL to:', this.currentUrl);
         
         // Update URL input
         const urlInput = document.getElementById('url');
         if (urlInput) {
           urlInput.value = this.currentUrl;
+          console.log('URL input updated');
+        } else {
+          console.error('URL input element not found');
         }
         
         // Auto-generate filename from title
@@ -64,11 +79,12 @@ class QRCodeGeneratorPopup {
         
         this.showMessage('Current page URL loaded!', 'success');
       } else {
+        console.error('No URL in response:', response);
         this.showMessage('Could not get current page URL', 'error');
       }
     } catch (error) {
       console.error('Error getting current tab:', error);
-      this.showMessage('Error getting current page URL', 'error');
+      this.showMessage('Error getting current page URL: ' + error.message, 'error');
     }
   }
 
@@ -155,8 +171,15 @@ class QRCodeGeneratorPopup {
 
     // Use Current Page button
     const useCurrentPageBtn = document.getElementById('useCurrentPage');
+    console.log('Looking for useCurrentPage button:', useCurrentPageBtn);
     if (useCurrentPageBtn) {
-      useCurrentPageBtn.addEventListener('click', () => this.useCurrentPage());
+      useCurrentPageBtn.addEventListener('click', () => {
+        console.log('Use Current Page button clicked');
+        this.useCurrentPage();
+      });
+      console.log('Use Current Page event listener added');
+    } else {
+      console.error('useCurrentPage button not found!');
     }
 
     // Generate QR button
@@ -298,7 +321,7 @@ class QRCodeGeneratorPopup {
       // Save to history
       await this.saveQRCode(finalUrl, filenameInput?.value || `qr-code.${format}`, format, utmParams);
       
-      this.showMessage('QR Code generated successfully!', 'success');
+      this.showMessage('QR Code generated and saved to database!', 'success');
     } catch (error) {
       console.error('Error generating QR code:', error);
       this.showMessage('Error generating QR code', 'error');
@@ -329,6 +352,10 @@ class QRCodeGeneratorPopup {
 
   async saveQRCode(url, filename, format, utmParams) {
     try {
+      // Save to Firebase (main app database)
+      await this.saveToFirebase(url, filename, format, utmParams);
+      
+      // Also save to Chrome storage for local history
       await chrome.runtime.sendMessage({
         action: 'saveQRCode',
         url,
@@ -336,8 +363,57 @@ class QRCodeGeneratorPopup {
         format,
         utmParams
       });
+      
+      console.log('QR code saved to both Firebase and Chrome storage');
     } catch (error) {
       console.error('Error saving QR code:', error);
+      // Still save to Chrome storage as fallback
+      try {
+        await chrome.runtime.sendMessage({
+          action: 'saveQRCode',
+          url,
+          filename,
+          format,
+          utmParams
+        });
+      } catch (chromeError) {
+        console.error('Error saving to Chrome storage:', chromeError);
+      }
+    }
+  }
+
+  async saveToFirebase(url, filename, format, utmParams) {
+    try {
+      // Import Firebase functions
+      const { db, collection, addDoc, serverTimestamp } = await import('./firebase-config.js');
+      
+      // Prepare data for Firebase (matching main app structure)
+      const qrData = {
+        originalUrl: url,
+        shortUrl: url, // Extension doesn't shorten URLs by default
+        utmSource: utmParams.utm_source || 'chrome_extension',
+        utmMedium: utmParams.utm_medium || 'qr_code',
+        utmCampaign: utmParams.utm_campaign || '',
+        utmTerm: utmParams.utm_term || '',
+        utmContent: utmParams.utm_content || '',
+        fullUrl: url,
+        scanCount: 0,
+        filename: filename,
+        format: format,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      console.log('Saving to Firebase:', qrData);
+      
+      // Add to Firebase
+      const docRef = await addDoc(collection(db, 'qrCodes'), qrData);
+      console.log('QR code saved to Firebase with ID:', docRef.id);
+      
+      return docRef.id;
+    } catch (error) {
+      console.error('Error saving to Firebase:', error);
+      throw error;
     }
   }
 
@@ -407,5 +483,15 @@ class QRCodeGeneratorPopup {
 
 // Initialize popup when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM loaded, initializing popup...');
   new QRCodeGeneratorPopup();
-}); 
+});
+
+// Also try immediate execution
+console.log('Popup script loaded');
+if (document.readyState === 'loading') {
+  console.log('Document still loading...');
+} else {
+  console.log('Document already loaded, initializing immediately...');
+  new QRCodeGeneratorPopup();
+} 
