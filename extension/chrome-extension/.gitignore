@@ -1,0 +1,7 @@
+# Chrome Extension specific ignores
+*.zip
+*.crx
+*.pem
+node_modules/
+.DS_Store
+Thumbs.db

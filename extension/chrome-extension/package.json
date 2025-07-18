@@ -1,0 +1,13 @@
+{
+  "name": "qr-code-generator-chrome",
+  "version": "1.0.0",
+  "description": "Chrome extension for generating QR codes with UTM tracking",
+  "main": "background.js",
+  "scripts": {
+    "build": "echo 'Extension built successfully'",
+    "package": "zip -r qr-code-generator-chrome.zip ."
+  },
+  "keywords": ["chrome-extension", "qr-code", "utm-tracking"],
+  "author": "Your Name",
+  "license": "MIT"
+}
