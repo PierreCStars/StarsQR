@@ -232,9 +232,12 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
 
 
   const generateQRCode = async () => {
-    console.log('Starting QR code generation...');
+    console.log('🚀 Starting QR code generation...');
+    console.log('🚀 Form data:', formData);
+    console.log('🚀 Is from extension:', isFromExtension);
+    
     if (!validateForm()) {
-      console.log('Form validation failed');
+      console.log('❌ Form validation failed');
       return;
     }
 
@@ -323,12 +326,13 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
         qrData.utmContent = formData.utm_content;
       }
 
-      console.log('QR code generated, saving to Firebase...');
-      console.log('QR data to save:', JSON.stringify(qrData, null, 2));
+      console.log('💾 QR code generated, saving to Firebase...');
+      console.log('💾 QR data to save:', JSON.stringify(qrData, null, 2));
       
       // Save to Firebase
+      console.log('💾 Calling createQRCode...');
       const firebaseId = await createQRCode(qrData);
-      console.log('Firebase ID:', firebaseId);
+      console.log('✅ Firebase ID:', firebaseId);
       
       // Create QR code data for local state
       const qrDataForState: QRCodeData = {
@@ -346,7 +350,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
         updatedAt: new Date()
       };
 
-      console.log('Calling onQRCodeGenerated with:', qrDataForState);
+      console.log('📞 Calling onQRCodeGenerated with:', qrDataForState);
       onQRCodeGenerated(qrDataForState);
       
       // Show success message
@@ -356,8 +360,15 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
       setTimeout(() => {
         setShowSuccessMessage(false);
       }, 5000);
+      
+      console.log('🎉 QR code generation completed successfully');
     } catch (error) {
-      console.error('Error generating QR code:', error);
+      console.error('❌ Error generating QR code:', error);
+      console.error('❌ Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : 'No stack trace'
+      });
     } finally {
       setIsGenerating(false);
     }
