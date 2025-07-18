@@ -354,35 +354,30 @@ class QRCodeGeneratorPopup {
     console.log('🔍 saveQRCode called with:', { url, filename, format, utmParams });
     
     try {
-      // Use API endpoint (simpler approach)
-      console.log('🔄 Using API endpoint...');
+      // Save to database in background without opening main app
+      console.log('🔄 Saving to database in background...');
       
-      let apiSuccess = false;
       try {
         const response = await chrome.runtime.sendMessage({
-          action: 'saveToFirebase',
+          action: 'saveToDatabase',
           url,
           filename,
           format,
           utmParams
         });
         
-        console.log('📡 API response:', response);
+        console.log('📡 Database save response:', response);
         
         if (response && response.success) {
-          console.log('✅ Main app opened successfully');
-          this.showMessage('Main app opened with QR code data!', 'success');
-          apiSuccess = true;
+          console.log('✅ QR code saved to database successfully');
+          this.showMessage('QR code saved to database!', 'success');
         } else {
-          console.error('❌ Failed to open main app:', response?.error || 'No response');
-          this.showMessage('Failed to open main app, saved locally instead', 'warning');
+          console.error('❌ Failed to save to database:', response?.error || 'No response');
+          this.showMessage('QR code downloaded but database save failed', 'warning');
         }
-      } catch (apiError) {
-        console.error('❌ API endpoint call failed:', apiError);
-        // Don't show error message for popup closure - this is expected
-        if (!apiError.message.includes('message channel closed')) {
-          this.showMessage('Failed to save to database, saved locally instead', 'warning');
-        }
+      } catch (dbError) {
+        console.error('❌ Database save failed:', dbError);
+        this.showMessage('QR code downloaded but database save failed', 'warning');
       }
       
       // Also save to Chrome storage for local history
@@ -403,11 +398,6 @@ class QRCodeGeneratorPopup {
       console.log('🎉 QR code save process completed');
     } catch (error) {
       console.error('❌ Error in saveQRCode:', error);
-      console.error('❌ Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
       
       // Still save to Chrome storage as fallback
       try {
