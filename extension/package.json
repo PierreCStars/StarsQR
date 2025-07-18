@@ -1,0 +1,36 @@
+{
+  "name": "stars-qr-generator-safari-extension",
+  "version": "1.0.0",
+  "description": "Safari extension for generating QR codes with UTM tracking",
+  "main": "manifest.json",
+  "scripts": {
+    "build": "./build.sh",
+    "dev": "echo 'Open Safari > Develop > Show Extension Builder to test'",
+    "package": "cd dist && zip -r ../stars-qr-generator-safari-extension.zip . -x '*.DS_Store' '*.git*'"
+  },
+  "keywords": [
+    "safari",
+    "extension",
+    "qr-code",
+    "utm-tracking",
+    "hubspot",
+    "stars"
+  ],
+  "author": "Stars",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PierreCStars/StarsQR.git"
+  },
+  "engines": {
+    "safari": ">=15.0"
+  },
+  "manifest": {
+    "version": 3,
+    "permissions": [
+      "activeTab",
+      "storage",
+      "tabs"
+    ]
+  }
+} 

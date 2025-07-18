@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stars QR Code Generator</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">
+        <svg class="star-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#FFD700"/>
+        </svg>
+        <h1>Stars QR Generator</h1>
+      </div>
+    </div>
+
+    <!-- URL Input -->
+    <div class="form-group">
+      <label for="url-input">URL</label>
+      <input type="url" id="url-input" placeholder="Enter URL or use current page" />
+      <button id="use-current-page" class="btn-secondary">Use Current Page</button>
+    </div>
+
+    <!-- UTM Parameters -->
+    <div class="utm-section">
+      <h3>UTM Parameters</h3>
+      
+      <div class="form-group">
+        <label for="utm-source">Source</label>
+        <input type="text" id="utm-source" value="safari_extension" />
+      </div>
+
+      <div class="form-group">
+        <label for="utm-medium">Medium</label>
+        <input type="text" id="utm-medium" value="qr_code" />
+      </div>
+
+      <div class="form-group">
+        <label for="utm-campaign">Campaign</label>
+        <select id="utm-campaign">
+          <option value="">Select Campaign</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="utm-term">Term (Optional)</label>
+        <input type="text" id="utm-term" placeholder="Keywords" />
+      </div>
+
+      <div class="form-group">
+        <label for="utm-content">Content (Optional)</label>
+        <input type="text" id="utm-content" placeholder="Content description" />
+      </div>
+    </div>
+
+    <!-- Generate Button -->
+    <div class="form-group">
+      <button id="generate-qr" class="btn-primary">Generate QR Code</button>
+    </div>
+
+    <!-- QR Code Display -->
+    <div id="qr-result" class="qr-result" style="display: none;">
+      <h3>Generated QR Code</h3>
+      <div id="qr-image-container"></div>
+      <div class="qr-actions">
+        <button id="download-png" class="btn-secondary">Download PNG</button>
+        <button id="download-svg" class="btn-secondary">Download SVG</button>
+        <button id="copy-url" class="btn-secondary">Copy URL</button>
+      </div>
+      <div id="short-url" class="short-url"></div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading" class="loading" style="display: none;">
+      <div class="spinner"></div>
+      <p>Generating QR Code...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error" class="error" style="display: none;">
+      <p id="error-message"></p>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html> 
