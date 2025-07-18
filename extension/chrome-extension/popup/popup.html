@@ -16,60 +16,83 @@
         </svg>
         <h1>Stars QR Generator</h1>
       </div>
+      <p class="subtitle">Create QR codes with UTM tracking</p>
     </div>
 
-    <!-- URL Input -->
-    <div class="form-group">
-      <label for="url">URL</label>
-      <input type="url" id="url" placeholder="Enter URL or use current page" />
-      <button id="useCurrentPage" class="btn-secondary">Use Current Page</button>
+    <!-- Quick Start Section -->
+    <div class="quick-start">
+      <div class="form-group">
+        <label for="url">📄 Page URL</label>
+        <div class="url-input-group">
+          <input type="url" id="url" placeholder="Enter URL or click 'Use Current Page'" />
+          <button id="useCurrentPage" class="btn-secondary btn-icon">📍 Use Current Page</button>
+        </div>
+        <small class="help-text">This will be the URL your QR code points to</small>
+      </div>
     </div>
 
     <!-- UTM Parameters -->
     <div class="utm-section">
-      <h3>UTM Parameters</h3>
+      <div class="section-header">
+        <h3>🎯 UTM Tracking Parameters</h3>
+        <small class="help-text">These help track where your traffic comes from</small>
+      </div>
       
-      <div class="form-group">
-        <label for="utm-source">Source</label>
-        <input type="text" id="utm-source" value="safari_extension" />
-      </div>
+      <div class="utm-grid">
+        <div class="form-group">
+          <label for="utm-source">Source</label>
+          <input type="text" id="utm-source" value="chrome_extension" placeholder="e.g., chrome_extension" />
+          <small class="help-text">Where the traffic comes from</small>
+        </div>
 
-      <div class="form-group">
-        <label for="utm-medium">Medium</label>
-        <input type="text" id="utm-medium" value="qr_code" />
-      </div>
+        <div class="form-group">
+          <label for="utm-medium">Medium</label>
+          <input type="text" id="utm-medium" value="qr_code" placeholder="e.g., qr_code" />
+          <small class="help-text">Marketing medium used</small>
+        </div>
 
-      <div class="form-group">
-        <label for="campaign">Campaign</label>
-        <select id="campaign">
-          <option value="">Select Campaign</option>
-        </select>
-      </div>
+        <div class="form-group">
+          <label for="campaign">Campaign</label>
+          <select id="campaign">
+            <option value="">Select a campaign...</option>
+          </select>
+          <small class="help-text">Choose your marketing campaign</small>
+        </div>
 
-      <div class="form-group">
-        <label for="utm-term">Term (Optional)</label>
-        <input type="text" id="utm-term" placeholder="Keywords" />
-      </div>
+        <div class="form-group">
+          <label for="utm-term">Term (Optional)</label>
+          <input type="text" id="utm-term" placeholder="Keywords or search terms" />
+          <small class="help-text">Keywords for paid search</small>
+        </div>
 
-      <div class="form-group">
-        <label for="utm-content">Content (Optional)</label>
-        <input type="text" id="utm-content" placeholder="Content description" />
+        <div class="form-group">
+          <label for="utm-content">Content (Optional)</label>
+          <input type="text" id="utm-content" placeholder="A/B test or link name" />
+          <small class="help-text">Used for A/B testing</small>
+        </div>
       </div>
     </div>
 
     <!-- Generate Button -->
-    <div class="form-group">
-      <button id="generateQR" class="btn-primary">Download QR Code</button>
+    <div class="generate-section">
+      <button id="generateQR" class="btn-primary">
+        <span class="btn-icon">📱</span>
+        Download QR Code
+      </button>
+      <small class="help-text">Your QR code will be automatically downloaded</small>
     </div>
 
     <!-- QR Code Display -->
     <div id="qr-result" class="qr-result" style="display: none;">
-      <h3>Generated QR Code</h3>
+      <div class="result-header">
+        <h3>✅ QR Code Generated!</h3>
+        <p>Your QR code is ready to use</p>
+      </div>
       <div id="qr-image-container"></div>
       <div class="qr-actions">
-        <button id="download-png" class="btn-secondary">Download PNG</button>
-        <button id="download-svg" class="btn-secondary">Download SVG</button>
-        <button id="copy-url" class="btn-secondary">Copy URL</button>
+        <button id="download-png" class="btn-secondary btn-icon">📥 PNG</button>
+        <button id="download-svg" class="btn-secondary btn-icon">📥 SVG</button>
+        <button id="copy-url" class="btn-secondary btn-icon">📋 Copy URL</button>
       </div>
       <div id="short-url" class="short-url"></div>
     </div>
@@ -77,12 +100,20 @@
     <!-- Loading State -->
     <div id="loading" class="loading" style="display: none;">
       <div class="spinner"></div>
-      <p>Generating QR Code...</p>
+      <p>Creating your QR code...</p>
+      <small>This will only take a moment</small>
     </div>
 
     <!-- Error State -->
     <div id="error" class="error" style="display: none;">
+      <div class="error-icon">⚠️</div>
       <p id="error-message"></p>
+      <small>Please check your URL and try again</small>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <small>Powered by Stars QR Generator</small>
     </div>
   </div>
 
