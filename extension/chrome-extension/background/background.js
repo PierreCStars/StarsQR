@@ -129,7 +129,7 @@ async function saveToFirebase(url, filename, format, utmParams) {
       from_extension: 'true'
     });
     
-    const mainAppUrl = `https://qr-generator-5ucv17thw-pierres-projects-bba7ee64.vercel.app/?${params.toString()}`;
+    const mainAppUrl = `https://qr-generator-5vkixxiuz-pierres-projects-bba7ee64.vercel.app/?${params.toString()}`;
     
     // Open the main app in a new tab
     const newTab = await chrome.tabs.create({
