@@ -120,6 +120,66 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
     loadHubSpotCampaigns();
   }, []);
 
+  // Handle URL parameters from Chrome extension
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromExtension = urlParams.get('from_extension');
+    
+    if (fromExtension === 'true') {
+      console.log('🔗 Extension data detected in URL parameters');
+      
+      // Extract QR code data from URL parameters
+      const url = urlParams.get('url');
+      const utm_source = urlParams.get('utm_source');
+      const utm_medium = urlParams.get('utm_medium');
+      const utm_campaign = urlParams.get('utm_campaign');
+      const utm_term = urlParams.get('utm_term');
+      const utm_content = urlParams.get('utm_content');
+      
+      if (url) {
+        console.log('🔗 Pre-filling form with extension data:', {
+          url,
+          utm_source,
+          utm_medium,
+          utm_campaign,
+          utm_term,
+          utm_content
+        });
+        
+        // Pre-fill the form with extension data
+        setFormData(prev => ({
+          ...prev,
+          url: url,
+          utm_source: utm_source || prev.utm_source,
+          utm_medium: utm_medium || prev.utm_medium,
+          utm_campaign: utm_campaign || prev.utm_campaign,
+          utm_term: utm_term || prev.utm_term,
+          utm_content: utm_content || prev.utm_content
+        }));
+        
+        // Clear the URL parameters to avoid re-processing
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      }
+    }
+  }, []);
+
+  // Auto-generate QR code when form is pre-filled from extension
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromExtension = urlParams.get('from_extension');
+    
+    if (fromExtension === 'true' && formData.url) {
+      // Auto-generate QR code after a short delay to ensure form is updated
+      const timer = setTimeout(() => {
+        console.log('🔗 Auto-generating QR code from extension data');
+        generateQRCode();
+      }, 1500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [formData.url]);
+
 
 
 
