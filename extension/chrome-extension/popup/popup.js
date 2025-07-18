@@ -352,22 +352,7 @@ class QRCodeGeneratorPopup {
 
   async saveQRCode(url, filename, format, utmParams) {
     try {
-      // Send to background script to save to Firebase
-      const response = await chrome.runtime.sendMessage({
-        action: 'saveToFirebase',
-        url,
-        filename,
-        format,
-        utmParams
-      });
-      
-      if (response.success) {
-        console.log('QR code saved to Firebase with ID:', response.firebaseId);
-      } else {
-        console.error('Failed to save to Firebase:', response.error);
-      }
-      
-      // Also save to Chrome storage for local history
+      // Save to Chrome storage for local history
       await chrome.runtime.sendMessage({
         action: 'saveQRCode',
         url,
@@ -376,21 +361,13 @@ class QRCodeGeneratorPopup {
         utmParams
       });
       
-      console.log('QR code saved to both Firebase and Chrome storage');
+      console.log('QR code saved to Chrome storage');
+      
+      // Show message about manual import
+      this.showMessage('QR code saved locally. To sync with main app, manually add it to the database.', 'info');
     } catch (error) {
       console.error('Error saving QR code:', error);
-      // Still save to Chrome storage as fallback
-      try {
-        await chrome.runtime.sendMessage({
-          action: 'saveQRCode',
-          url,
-          filename,
-          format,
-          utmParams
-        });
-      } catch (chromeError) {
-        console.error('Error saving to Chrome storage:', chromeError);
-      }
+      this.showMessage('Error saving QR code', 'error');
     }
   }
 

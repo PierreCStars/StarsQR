@@ -29,5 +29,10 @@
   ],
   "env": {
     "VITE_APP_ENV": "production"
+  },
+  "functions": {
+    "api/save-qr-code.js": {
+      "maxDuration": 10
+    }
   }
 } 

@@ -59,17 +59,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
       return true;
       
-    case 'saveToFirebase':
-      // Handle Firebase saving in background script
-      saveToFirebase(request.url, request.filename, request.format, request.utmParams)
-        .then((firebaseId) => {
-          sendResponse({ success: true, firebaseId: firebaseId });
-        })
-        .catch((error) => {
-          console.error('Firebase save error:', error);
-          sendResponse({ success: false, error: error.message });
-        });
-      return true;
+
       
     case 'getQRHistory':
       chrome.storage.local.get(['qrCodes'], (result) => {
@@ -97,35 +87,4 @@ chrome.action.onClicked.addListener((tab) => {
   // Could open popup programmatically or perform other actions
 });
 
-// Firebase saving function using serverless API
-async function saveToFirebase(url, filename, format, utmParams) {
-  try {
-    console.log('Saving to Firebase via API:', { url, filename, format, utmParams });
-
-    // Use the serverless API endpoint
-    const response = await fetch('https://qr-generator-p725mg39f-pierres-projects-bba7ee64.vercel.app/api/save-qr-code', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url,
-        filename,
-        format,
-        utmParams
-      })
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`API error: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-
-    const result = await response.json();
-    console.log('Firebase save successful via API:', result);
-    return result.firebaseId;
-  } catch (error) {
-    console.error('Error saving to Firebase via API:', error);
-    throw error;
-  }
-} 
+ 
