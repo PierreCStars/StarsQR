@@ -370,12 +370,12 @@ class QRCodeGeneratorPopup {
         console.log('📡 API response:', response);
         
         if (response && response.success) {
-          console.log('✅ QR code saved to Firebase via API with ID:', response.firebaseId);
-          this.showMessage('QR code saved to database!', 'success');
+          console.log('✅ Main app opened successfully');
+          this.showMessage('Main app opened with QR code data!', 'success');
           apiSuccess = true;
         } else {
-          console.error('❌ Failed to save to Firebase via API:', response?.error || 'No response');
-          this.showMessage('Failed to save to database, saved locally instead', 'warning');
+          console.error('❌ Failed to open main app:', response?.error || 'No response');
+          this.showMessage('Failed to open main app, saved locally instead', 'warning');
         }
       } catch (apiError) {
         console.error('❌ API endpoint call failed:', apiError);

@@ -97,45 +97,38 @@ chrome.action.onClicked.addListener((tab) => {
   // Could open popup programmatically or perform other actions
 });
 
-// Firebase saving function using working API endpoint
+// Simple solution: Open main app with QR code data pre-filled
 async function saveToFirebase(url, filename, format, utmParams) {
   try {
-    console.log('🔥 Saving to Firebase via working API:', { url, filename, format, utmParams });
+    console.log('🔥 Opening main app with QR code data:', { url, filename, format, utmParams });
 
-    // Use the working endpoint (uses Firebase Admin SDK) - new production URL
-    const apiUrl = 'https://qr-generator-bxkyfmx4z-pierres-projects-bba7ee64.vercel.app/api/save-qr-code-working';
-    console.log('📡 Making API call to:', apiUrl);
-    
-    const requestBody = {
-      url,
-      filename,
-      format,
-      utmParams
-    };
-    console.log('📤 Request body:', requestBody);
-
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody)
+    // Create URL with QR code data as parameters
+    const params = new URLSearchParams({
+      url: url,
+      utm_source: utmParams?.utm_source || 'chrome_extension',
+      utm_medium: utmParams?.utm_medium || 'qr_code',
+      utm_campaign: utmParams?.utm_campaign || '',
+      utm_term: utmParams?.utm_term || '',
+      utm_content: utmParams?.utm_content || '',
+      from_extension: 'true'
     });
-
-    console.log('📡 Response status:', response.status);
-    console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ API error response:', errorText);
-      throw new Error(`API error: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-
-    const result = await response.json();
-    console.log('✅ Firebase save successful via working API:', result);
-    return result.firebaseId;
+    
+    const mainAppUrl = `https://qr-generator-bxkyfmx4z-pierres-projects-bba7ee64.vercel.app/?${params.toString()}`;
+    
+    // Open the main app in a new tab
+    const newTab = await chrome.tabs.create({
+      url: mainAppUrl,
+      active: true
+    });
+    
+    console.log('✅ Main app opened with QR code data');
+    console.log('📋 URL:', mainAppUrl);
+    
+    // Return a success message
+    return 'main-app-opened';
+    
   } catch (error) {
-    console.error('❌ Error saving to Firebase via working API:', error);
+    console.error('❌ Error opening main app:', error);
     console.error('❌ Error details:', {
       name: error.name,
       message: error.message,
