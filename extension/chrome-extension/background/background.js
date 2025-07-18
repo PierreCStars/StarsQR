@@ -102,8 +102,8 @@ async function saveToFirebase(url, filename, format, utmParams) {
   try {
     console.log('Saving to Firebase via Admin SDK:', { url, filename, format, utmParams });
 
-    // Use the Admin SDK endpoint
-    const response = await fetch('https://qr-generator-nwect2r61-pierres-projects-bba7ee64.vercel.app/api/save-qr-code-admin', {
+    // Use the simple endpoint (uses existing Firebase config)
+    const response = await fetch('https://qr-generator-epe32ngzi-pierres-projects-bba7ee64.vercel.app/api/save-qr-code-simple', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

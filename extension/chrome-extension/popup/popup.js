@@ -352,21 +352,75 @@ class QRCodeGeneratorPopup {
 
   async saveQRCode(url, filename, format, utmParams) {
     try {
-      // Send to background script to save to Firebase via Admin SDK
-      const response = await chrome.runtime.sendMessage({
-        action: 'saveToFirebase',
-        url,
-        filename,
-        format,
-        utmParams
-      });
-      
-      if (response.success) {
-        console.log('QR code saved to Firebase with ID:', response.firebaseId);
+      // Try direct Firebase save first
+      let firebaseSuccess = false;
+      try {
+        // Import Firebase dynamically
+        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+        const { getFirestore, collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        
+        // Firebase configuration (same as main app)
+        const firebaseConfig = {
+          apiKey: "AIzaSyD7sueQsP0m-xhFQ4C3YVUMINEMvyBWI2w",
+          authDomain: "stars-qr-code.firebaseapp.com",
+          projectId: "stars-qr-code",
+          storageBucket: "stars-qr-code.appspot.com",
+          messagingSenderId: "893928368865",
+          appId: "1:893928368865:web:662c503f2e40c4dfdb65a0"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Prepare data for Firebase (matching main app structure)
+        const qrData = {
+          originalUrl: url,
+          shortUrl: url, // Extension doesn't shorten URLs by default
+          utmSource: utmParams?.utm_source || 'chrome_extension',
+          utmMedium: utmParams?.utm_medium || 'qr_code',
+          utmCampaign: utmParams?.utm_campaign || '',
+          utmTerm: utmParams?.utm_term || '',
+          utmContent: utmParams?.utm_content || '',
+          fullUrl: url,
+          scanCount: 0,
+          filename: filename || 'qr-code.png',
+          format: format || 'png',
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        };
+
+        console.log('Saving QR code directly to Firebase:', qrData);
+
+        // Add to Firebase
+        const docRef = await addDoc(collection(db, 'qrCodes'), qrData);
+        
+        console.log('QR code saved successfully with ID:', docRef.id);
+        firebaseSuccess = true;
         this.showMessage('QR code saved to database!', 'success');
-      } else {
-        console.error('Failed to save to Firebase:', response.error);
-        this.showMessage('Failed to save to database, saved locally instead', 'warning');
+      } catch (firebaseError) {
+        console.error('Direct Firebase save failed:', firebaseError);
+        firebaseSuccess = false;
+      }
+
+      // Fallback to API endpoint if direct save failed
+      if (!firebaseSuccess) {
+        console.log('Trying API endpoint as fallback...');
+        const response = await chrome.runtime.sendMessage({
+          action: 'saveToFirebase',
+          url,
+          filename,
+          format,
+          utmParams
+        });
+        
+        if (response.success) {
+          console.log('QR code saved to Firebase via API with ID:', response.firebaseId);
+          this.showMessage('QR code saved to database!', 'success');
+        } else {
+          console.error('Failed to save to Firebase via API:', response.error);
+          this.showMessage('Failed to save to database, saved locally instead', 'warning');
+        }
       }
       
       // Also save to Chrome storage for local history

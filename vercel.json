@@ -33,6 +33,13 @@
   "functions": {
     "api/save-qr-code.js": {
       "maxDuration": 10
+    },
+    "api/save-qr-code-simple.js": {
+      "maxDuration": 10
+    },
+    "api/save-qr-code-admin.js": {
+      "maxDuration": 10
     }
-  }
+  },
+  "public": true
 } 
