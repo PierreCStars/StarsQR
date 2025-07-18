@@ -204,6 +204,28 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
     }
   }, [formData.url]);
 
+  // Test function to simulate extension data
+  const testExtensionData = () => {
+    console.log('🧪 Testing extension data simulation...');
+    const testUrl = 'https://www.stars.mc/voitures/occasion/monaco/porsche/911/essence/coupe-992-3-7-650ch-turbo-s-pdk/2893644/';
+    const testParams = {
+      url: testUrl,
+      utm_source: 'chrome_extension',
+      utm_medium: 'qr_code',
+      utm_campaign: 'Dark Ads',
+      utm_term: '',
+      utm_content: '',
+      from_extension: 'true'
+    };
+    
+    // Simulate URL parameters
+    const params = new URLSearchParams(testParams);
+    const testUrlWithParams = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+    
+    console.log('🧪 Test URL:', testUrlWithParams);
+    window.location.href = testUrlWithParams;
+  };
+
 
 
 
@@ -432,6 +454,21 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Form Section */}
         <div className="space-y-6">
+          {/* Test Extension Button */}
+          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-medium text-yellow-800">🧪 Extension Test</h3>
+                <p className="text-xs text-yellow-700 mt-1">Test the Chrome extension integration</p>
+              </div>
+              <button
+                onClick={testExtensionData}
+                className="px-3 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600 transition-colors"
+              >
+                Test Extension
+              </button>
+            </div>
+          </div>
           <div>
             <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-2">
               Target URL *
