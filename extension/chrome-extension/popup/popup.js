@@ -296,21 +296,17 @@ class QRCodeGeneratorPopup {
       finalUrl = url.toString();
     }
     
-    // Auto-shorten if enabled
-    if (autoShortenToggle && autoShortenToggle.checked) {
-      try {
-        finalUrl = await this.shortenUrl(finalUrl);
-      } catch (error) {
-        console.error('Error shortening URL:', error);
-      }
-    }
-    
-    // Generate QR code
+    // Generate QR code with the original URL (with UTM parameters)
     const format = formatSelect?.value || 'png';
     const size = parseInt(sizeInput?.value) || 256;
     
     try {
-      const qrCodeDataUrl = await this.generateQRCodeDataUrl(finalUrl, format, size);
+      // Create a short URL for tracking (same as main app)
+      const shortUrl = this.createShortUrl(finalUrl);
+      console.log('🔗 Created short URL for tracking:', shortUrl);
+      
+      // Generate QR code using the short URL for tracking
+      const qrCodeDataUrl = await this.generateQRCodeDataUrl(shortUrl, format, size);
       
       // Create download link
       const link = document.createElement('a');
@@ -318,8 +314,8 @@ class QRCodeGeneratorPopup {
       link.download = filenameInput?.value || `qr-code.${format}`;
       link.click();
       
-      // Save to history
-      await this.saveQRCode(finalUrl, filenameInput?.value || `qr-code.${format}`, format, utmParams);
+      // Save to database with short URL for tracking
+      await this.saveQRCode(finalUrl, shortUrl, filenameInput?.value || `qr-code.${format}`, format, utmParams);
       
       this.showMessage('QR Code generated and saved to database!', 'success');
     } catch (error) {
@@ -341,6 +337,23 @@ class QRCodeGeneratorPopup {
     return URL.createObjectURL(blob);
   }
 
+  // Create short URL (same logic as main app)
+  createShortUrl(originalUrl) {
+    const shortCode = this.generateShortCode();
+    const baseUrl = 'https://qr-generator-koxf19uh8-pierres-projects-bba7ee64.vercel.app';
+    return `${baseUrl}/r/${shortCode}`;
+  }
+
+  // Generate short code (same logic as main app)
+  generateShortCode() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < 6; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
   async shortenUrl(url) {
     // Use TinyURL API for URL shortening
     const response = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(url)}`);
@@ -350,8 +363,8 @@ class QRCodeGeneratorPopup {
     return url; // Return original URL if shortening fails
   }
 
-  async saveQRCode(url, filename, format, utmParams) {
-    console.log('🔍 saveQRCode called with:', { url, filename, format, utmParams });
+  async saveQRCode(originalUrl, shortUrl, filename, format, utmParams) {
+    console.log('🔍 saveQRCode called with:', { originalUrl, shortUrl, filename, format, utmParams });
     
     try {
       // Save to database in background without opening main app
@@ -360,7 +373,8 @@ class QRCodeGeneratorPopup {
       try {
         const response = await chrome.runtime.sendMessage({
           action: 'saveToDatabase',
-          url,
+          originalUrl,
+          shortUrl,
           filename,
           format,
           utmParams
@@ -385,7 +399,7 @@ class QRCodeGeneratorPopup {
       try {
         await chrome.runtime.sendMessage({
           action: 'saveQRCode',
-          url,
+          url: shortUrl, // Save the short URL for consistency
           filename,
           format,
           utmParams
@@ -404,7 +418,7 @@ class QRCodeGeneratorPopup {
         console.log('🔄 Attempting Chrome storage fallback...');
         await chrome.runtime.sendMessage({
           action: 'saveQRCode',
-          url,
+          url: shortUrl,
           filename,
           format,
           utmParams

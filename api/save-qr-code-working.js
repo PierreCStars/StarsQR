@@ -48,24 +48,24 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { url, filename, format, utmParams } = req.body;
+    const { originalUrl, shortUrl, filename, format, utmParams } = req.body;
 
-    if (!url) {
-      return res.status(400).json({ error: 'URL is required' });
+    if (!originalUrl) {
+      return res.status(400).json({ error: 'Original URL is required' });
     }
 
-    console.log('📝 Saving QR code from extension:', { url, filename, format, utmParams });
+    console.log('📝 Saving QR code from extension:', { originalUrl, shortUrl, filename, format, utmParams });
 
     // Prepare data for Firebase (matching main app structure)
     const qrData = {
-      originalUrl: url,
-      shortUrl: url, // Extension doesn't shorten URLs by default
+      originalUrl: originalUrl,
+      shortUrl: shortUrl || originalUrl, // Use provided shortUrl or fallback to originalUrl
       utmSource: utmParams?.utm_source || 'chrome_extension',
       utmMedium: utmParams?.utm_medium || 'qr_code',
       utmCampaign: utmParams?.utm_campaign || '',
       utmTerm: utmParams?.utm_term || '',
       utmContent: utmParams?.utm_content || '',
-      fullUrl: url,
+      fullUrl: originalUrl,
       scanCount: 0,
       filename: filename || 'qr-code.png',
       format: format || 'png',

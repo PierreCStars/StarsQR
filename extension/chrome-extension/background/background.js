@@ -64,17 +64,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return true;
       
     case 'saveToDatabase':
-      // Handle Firebase saving in background script via API
-      saveToDatabase(request.url, request.filename, request.format, request.utmParams)
-        .then((firebaseId) => {
+      console.log('🔥 saveToDatabase requested with:', request);
+      saveToDatabase(request.originalUrl, request.shortUrl, request.filename, request.format, request.utmParams)
+        .then((result) => {
+          console.log('✅ Database save successful:', result);
           try {
-            sendResponse({ success: true, firebaseId: firebaseId });
+            sendResponse({ success: true, firebaseId: result });
           } catch (e) {
             console.log('Response already sent or popup closed');
           }
         })
         .catch((error) => {
-          console.error('Database save error:', error);
+          console.error('❌ Database save failed:', error);
           try {
             sendResponse({ success: false, error: error.message });
           } catch (e) {
@@ -85,11 +86,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       
     case 'getQRHistory':
       chrome.storage.local.get(['qrCodes'], (result) => {
-        try {
-          sendResponse({ qrCodes: result.qrCodes || [] });
-        } catch (e) {
-          console.log('Response already sent or popup closed');
-        }
+        sendResponse({ qrCodes: result.qrCodes || [] });
       });
       return true;
       
@@ -114,25 +111,25 @@ chrome.action.onClicked.addListener((tab) => {
 });
 
 // Save QR code to database via API
-async function saveToDatabase(url, filename, format, utmParams) {
+async function saveToDatabase(originalUrl, shortUrl, filename, format, utmParams) {
   try {
-    console.log('🔥 Saving QR code to database:', { url, filename, format, utmParams });
+    console.log('🔥 Saving QR code to database:', { originalUrl, shortUrl, filename, format, utmParams });
 
-    // Prepare the QR code data
+    // Prepare the QR code data (matching main app structure)
     const qrData = {
-      originalUrl: url,
-      shortUrl: url, // Will be updated by the API
+      originalUrl: originalUrl,
+      shortUrl: shortUrl, // Use the short URL for tracking
       utmSource: utmParams?.utm_source || 'chrome_extension',
       utmMedium: utmParams?.utm_medium || 'qr_code',
       utmCampaign: utmParams?.utm_campaign || '',
       utmTerm: utmParams?.utm_term || '',
       utmContent: utmParams?.utm_content || '',
-      fullUrl: url,
+      fullUrl: originalUrl, // The original URL with UTM parameters
       scanCount: 0
     };
 
     // Call the API endpoint
-    const response = await fetch('https://qr-generator-5vkixxiuz-pierres-projects-bba7ee64.vercel.app/api/save-qr-code.js', {
+    const response = await fetch('https://qr-generator-koxf19uh8-pierres-projects-bba7ee64.vercel.app/api/save-qr-code-working.js', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -147,7 +144,7 @@ async function saveToDatabase(url, filename, format, utmParams) {
     const result = await response.json();
     console.log('✅ QR code saved to database:', result);
     
-    return result.id || 'saved';
+    return result.firebaseId || 'saved';
     
   } catch (error) {
     console.error('❌ Error saving to database:', error);
