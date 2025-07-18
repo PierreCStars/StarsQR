@@ -41,7 +41,26 @@ export { initializeFirebase };
 // Export async functions that wait for initialization
 export async function getFirebaseFunctions() {
   if (!db) {
-    await initializeFirebase();
+    const success = await initializeFirebase();
+    if (!success) {
+      throw new Error('Failed to initialize Firebase');
+    }
   }
   return { db, collection, addDoc, serverTimestamp };
+}
+
+// Also export a simple save function for convenience
+export async function saveQRCodeToFirebase(qrData) {
+  const { db, collection, addDoc, serverTimestamp } = await getFirebaseFunctions();
+  
+  // Add timestamps if not present
+  if (!qrData.createdAt) {
+    qrData.createdAt = serverTimestamp();
+  }
+  if (!qrData.updatedAt) {
+    qrData.updatedAt = serverTimestamp();
+  }
+  
+  const docRef = await addDoc(collection(db, 'qrCodes'), qrData);
+  return docRef.id;
 } 

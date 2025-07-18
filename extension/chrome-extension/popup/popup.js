@@ -352,26 +352,11 @@ class QRCodeGeneratorPopup {
 
   async saveQRCode(url, filename, format, utmParams) {
     try {
-      // Try direct Firebase save first
+      // Try direct Firebase save first using the existing config
       let firebaseSuccess = false;
       try {
-        // Import Firebase dynamically
-        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
-        const { getFirestore, collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-        
-        // Firebase configuration (same as main app)
-        const firebaseConfig = {
-          apiKey: "AIzaSyD7sueQsP0m-xhFQ4C3YVUMINEMvyBWI2w",
-          authDomain: "stars-qr-code.firebaseapp.com",
-          projectId: "stars-qr-code",
-          storageBucket: "stars-qr-code.appspot.com",
-          messagingSenderId: "893928368865",
-          appId: "1:893928368865:web:662c503f2e40c4dfdb65a0"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        // Use the existing Firebase config file
+        const { saveQRCodeToFirebase } = await import('./firebase-config.js');
 
         // Prepare data for Firebase (matching main app structure)
         const qrData = {
@@ -385,17 +370,15 @@ class QRCodeGeneratorPopup {
           fullUrl: url,
           scanCount: 0,
           filename: filename || 'qr-code.png',
-          format: format || 'png',
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
+          format: format || 'png'
         };
 
         console.log('Saving QR code directly to Firebase:', qrData);
 
-        // Add to Firebase
-        const docRef = await addDoc(collection(db, 'qrCodes'), qrData);
+        // Add to Firebase using convenience function
+        const docId = await saveQRCodeToFirebase(qrData);
         
-        console.log('QR code saved successfully with ID:', docRef.id);
+        console.log('QR code saved successfully with ID:', docId);
         firebaseSuccess = true;
         this.showMessage('QR code saved to database!', 'success');
       } catch (firebaseError) {
