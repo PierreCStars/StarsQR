@@ -35,6 +35,7 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
   const [pageTitle, setPageTitle] = useState<string>('');
   const [qrCodeName, setQrCodeName] = useState<string>('');
   const [showPopup, setShowPopup] = useState<boolean>(false);
+  const [isFromExtension, setIsFromExtension] = useState<boolean>(false);
 
 
 
@@ -134,6 +135,9 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
     if (fromExtension === 'true') {
       console.log('🔗 Extension data detected in URL parameters');
       
+      // Set extension flag
+      setIsFromExtension(true);
+      
       // Extract QR code data from URL parameters
       const url = urlParams.get('url');
       const utm_source = urlParams.get('utm_source');
@@ -181,18 +185,16 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
   React.useEffect(() => {
     console.log('🔍 Checking for auto-generation trigger...');
     console.log('🔍 formData.url:', formData.url);
+    console.log('🔍 isFromExtension:', isFromExtension);
     
-    const urlParams = new URLSearchParams(window.location.search);
-    const fromExtension = urlParams.get('from_extension');
-    
-    console.log('🔍 from_extension for auto-gen:', fromExtension);
-    
-    if (fromExtension === 'true' && formData.url) {
+    if (isFromExtension && formData.url) {
       console.log('🔗 Auto-generation conditions met, setting timer...');
       // Auto-generate QR code after a short delay to ensure form is updated
       const timer = setTimeout(() => {
         console.log('🔗 Auto-generating QR code from extension data');
         generateQRCode();
+        // Reset the extension flag after auto-generation
+        setIsFromExtension(false);
       }, 1500);
       
       return () => {
@@ -200,9 +202,9 @@ export default function QRCodeGenerator({ onQRCodeGenerated, onGoToAnalytics }: 
         clearTimeout(timer);
       };
     } else {
-      console.log('🔍 Auto-generation conditions not met:', { fromExtension, hasUrl: !!formData.url });
+      console.log('🔍 Auto-generation conditions not met:', { isFromExtension, hasUrl: !!formData.url });
     }
-  }, [formData.url]);
+  }, [formData.url, isFromExtension]);
 
   // Test function to simulate extension data
   const testExtensionData = () => {
