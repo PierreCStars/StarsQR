@@ -54,7 +54,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
         
         chrome.storage.local.set({ qrCodes }, () => {
-          sendResponse({ success: true, count: qrCodes.length });
+          try {
+            sendResponse({ success: true, count: qrCodes.length });
+          } catch (e) {
+            console.log('Response already sent or popup closed');
+          }
         });
       });
       return true;
@@ -63,17 +67,29 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       // Handle Firebase saving in background script via Admin SDK
       saveToFirebase(request.url, request.filename, request.format, request.utmParams)
         .then((firebaseId) => {
-          sendResponse({ success: true, firebaseId: firebaseId });
+          try {
+            sendResponse({ success: true, firebaseId: firebaseId });
+          } catch (e) {
+            console.log('Response already sent or popup closed');
+          }
         })
         .catch((error) => {
           console.error('Firebase save error:', error);
-          sendResponse({ success: false, error: error.message });
+          try {
+            sendResponse({ success: false, error: error.message });
+          } catch (e) {
+            console.log('Response already sent or popup closed');
+          }
         });
       return true;
       
     case 'getQRHistory':
       chrome.storage.local.get(['qrCodes'], (result) => {
-        sendResponse({ qrCodes: result.qrCodes || [] });
+        try {
+          sendResponse({ qrCodes: result.qrCodes || [] });
+        } catch (e) {
+          console.log('Response already sent or popup closed');
+        }
       });
       return true;
       

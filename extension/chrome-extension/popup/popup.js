@@ -379,7 +379,10 @@ class QRCodeGeneratorPopup {
         }
       } catch (apiError) {
         console.error('❌ API endpoint call failed:', apiError);
-        this.showMessage('Failed to save to database, saved locally instead', 'warning');
+        // Don't show error message for popup closure - this is expected
+        if (!apiError.message.includes('message channel closed')) {
+          this.showMessage('Failed to save to database, saved locally instead', 'warning');
+        }
       }
       
       // Also save to Chrome storage for local history
