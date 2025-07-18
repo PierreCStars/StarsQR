@@ -46,6 +46,32 @@ class QRCodeGeneratorPopup {
     }
   }
 
+  async useCurrentPage() {
+    try {
+      const response = await chrome.runtime.sendMessage({ action: 'getCurrentTab' });
+      if (response.url) {
+        this.currentUrl = response.url;
+        this.currentTitle = response.title || '';
+        
+        // Update URL input
+        const urlInput = document.getElementById('url');
+        if (urlInput) {
+          urlInput.value = this.currentUrl;
+        }
+        
+        // Auto-generate filename from title
+        this.generateFilename();
+        
+        this.showMessage('Current page URL loaded!', 'success');
+      } else {
+        this.showMessage('Could not get current page URL', 'error');
+      }
+    } catch (error) {
+      console.error('Error getting current tab:', error);
+      this.showMessage('Error getting current page URL', 'error');
+    }
+  }
+
   async loadCampaigns() {
     try {
       // For Chrome extension, we'll use a simplified campaign list
@@ -125,6 +151,12 @@ class QRCodeGeneratorPopup {
         this.currentUrl = urlInput.value;
         this.generateFilename();
       });
+    }
+
+    // Use Current Page button
+    const useCurrentPageBtn = document.getElementById('useCurrentPage');
+    if (useCurrentPageBtn) {
+      useCurrentPageBtn.addEventListener('click', () => this.useCurrentPage());
     }
 
     // Generate QR button
