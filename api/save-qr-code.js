@@ -1,20 +1,6 @@
 // Vercel serverless function to save QR codes from Chrome extension
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: process.env.VITE_FIREBASE_API_KEY,
-  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.VITE_FIREBASE_APP_ID
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from './_lib/firebase.js';
 
 export default async function handler(req, res) {
   // Enable CORS for Chrome extension
@@ -56,12 +42,8 @@ export default async function handler(req, res) {
       updatedAt: serverTimestamp()
     };
 
-    console.log('Saving QR code from extension:', qrData);
-
     // Add to Firebase
     const docRef = await addDoc(collection(db, 'qrCodes'), qrData);
-    
-    console.log('QR code saved successfully with ID:', docRef.id);
 
     res.status(200).json({
       success: true,
