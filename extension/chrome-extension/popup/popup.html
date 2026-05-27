@@ -73,6 +73,43 @@
       </div>
     </div>
 
+    <!-- QR Code Settings -->
+    <div class="qr-settings">
+      <div class="section-header">
+        <h3>⚙️ QR Code Settings</h3>
+        <small class="help-text">Customize your QR code output</small>
+      </div>
+      
+      <div class="settings-grid">
+        <div class="form-group">
+          <label for="filename">📝 Filename</label>
+          <input type="text" id="filename" placeholder="Auto-generated from page title" />
+          <small class="help-text">The filename for your QR code (auto-generated from page title)</small>
+          <div id="title-status" class="title-status" style="display: none;">
+            <span class="status-icon">✅</span>
+            <span class="status-text">Page title loaded</span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="format">📄 Format</label>
+          <select id="format">
+            <option value="png">PNG</option>
+            <option value="svg">SVG</option>
+          </select>
+          <small class="help-text">Image format for your QR code</small>
+        </div>
+        
+        <div class="form-group">
+          <label for="size">📏 Size</label>
+          <select id="size" disabled>
+            <option value="300" selected>300px (Fixed)</option>
+          </select>
+          <small class="help-text">Size fixed to match main app (300px)</small>
+        </div>
+      </div>
+    </div>
+
     <!-- Generate Button -->
     <div class="generate-section">
       <button id="generateQR" class="btn-primary">
@@ -117,8 +154,10 @@
     </div>
   </div>
 
-  <!-- Firebase SDK -->
-  <script type="module" src="firebase-config.js"></script>
-  <script src="popup.js"></script>
-</body>
+      <!-- Firebase SDK -->
+    <script type="module" src="firebase-config.js"></script>
+    <!-- QRCode Library -->
+    <script src="qrcode.min.js"></script>
+    <script src="popup.js"></script>
+  </body>
 </html> 

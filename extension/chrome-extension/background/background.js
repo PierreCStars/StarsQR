@@ -65,19 +65,31 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       
     case 'saveToDatabase':
       console.log('🔥 saveToDatabase requested with:', request);
-      saveToDatabase(request.originalUrl, request.shortUrl, request.filename, request.format, request.utmParams)
+      saveToDatabase(request.originalUrl, request.shortUrl, request.filename, request.format, request.utmParams, request.fullUrl)
         .then((result) => {
-          console.log('✅ Database save successful:', result);
+          console.log('✅ Database save result:', result);
           try {
-            sendResponse({ success: true, firebaseId: result });
+            if (result.success === false) {
+              // Handle structured error response
+              console.warn('⚠️ Database save failed, using fallback:', result.fallback);
+              sendResponse(result);
+            } else {
+              // Handle success response
+              sendResponse({ success: true, firebaseId: result });
+            }
           } catch (e) {
             console.log('Response already sent or popup closed');
           }
         })
         .catch((error) => {
-          console.error('❌ Database save failed:', error);
+          console.error('❌ Unexpected error in saveToDatabase:', error);
           try {
-            sendResponse({ success: false, error: error.message });
+            sendResponse({ 
+              success: false, 
+              error: error.message,
+              fallback: 'chrome_storage',
+              timestamp: new Date().toISOString()
+            });
           } catch (e) {
             console.log('Response already sent or popup closed');
           }
@@ -111,25 +123,26 @@ chrome.action.onClicked.addListener((tab) => {
 });
 
 // Save QR code to database via API
-async function saveToDatabase(originalUrl, shortUrl, filename, format, utmParams) {
+async function saveToDatabase(originalUrl, shortUrl, filename, format, utmParams, fullUrl) {
   try {
-    console.log('🔥 Saving QR code to database:', { originalUrl, shortUrl, filename, format, utmParams });
+    console.log('🔥 Saving QR code to database:', { originalUrl, shortUrl, filename, format, utmParams, fullUrl });
 
     // Prepare the QR code data (matching main app structure)
     const qrData = {
       originalUrl: originalUrl,
-      shortUrl: shortUrl, // Use the short URL for tracking
+      shortUrl: shortUrl,
+      filename: filename,
+      format: format,
       utmSource: utmParams?.utm_source || 'chrome_extension',
       utmMedium: utmParams?.utm_medium || 'qr_code',
       utmCampaign: utmParams?.utm_campaign || '',
       utmTerm: utmParams?.utm_term || '',
       utmContent: utmParams?.utm_content || '',
-      fullUrl: originalUrl, // The original URL with UTM parameters
-      scanCount: 0
+      fullUrl: fullUrl || originalUrl
     };
 
     // Call the API endpoint
-    const response = await fetch('https://qr-generator-koxf19uh8-pierres-projects-bba7ee64.vercel.app/api/save-qr-code-working.js', {
+    const response = await fetch('https://qr-generator-qc0kwk8ul-pierres-projects-bba7ee64.vercel.app/api/save-qr-code-chrome.js', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -148,6 +161,24 @@ async function saveToDatabase(originalUrl, shortUrl, filename, format, utmParams
     
   } catch (error) {
     console.error('❌ Error saving to database:', error);
-    throw error;
+    
+    // Provide more detailed error information
+    const errorDetails = {
+      message: error.message,
+      type: error.name,
+      stack: error.stack,
+      timestamp: new Date().toISOString(),
+      data: { originalUrl, shortUrl, filename, format }
+    };
+    
+    console.error('📋 Detailed error information:', errorDetails);
+    
+    // Don't throw the error, return a structured error response instead
+    return {
+      success: false,
+      error: error.message,
+      details: errorDetails,
+      fallback: 'chrome_storage'
+    };
   }
 }

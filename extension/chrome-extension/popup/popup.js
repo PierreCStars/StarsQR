@@ -33,10 +33,25 @@ class QRCodeGeneratorPopup {
 
   async getCurrentTab() {
     try {
+      // Get basic tab info from background script
       const response = await chrome.runtime.sendMessage({ action: 'getCurrentTab' });
       if (response.url) {
         this.currentUrl = response.url;
         this.currentTitle = response.title || '';
+        
+        // Try to get more detailed page info from content script
+        try {
+          const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+          if (tab && tab.id) {
+            const pageInfo = await chrome.tabs.sendMessage(tab.id, { action: 'getPageInfo' });
+            if (pageInfo && pageInfo.title) {
+              this.currentTitle = pageInfo.title;
+              console.log('Got detailed page title from content script:', this.currentTitle);
+            }
+          }
+        } catch (contentError) {
+          console.log('Content script not available, using basic tab info:', contentError.message);
+        }
         
         // Update URL input
         const urlInput = document.getElementById('url');
@@ -63,7 +78,22 @@ class QRCodeGeneratorPopup {
         this.currentUrl = response.url;
         this.currentTitle = response.title || '';
         
+        // Try to get more detailed page info from content script
+        try {
+          const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+          if (tab && tab.id) {
+            const pageInfo = await chrome.tabs.sendMessage(tab.id, { action: 'getPageInfo' });
+            if (pageInfo && pageInfo.title) {
+              this.currentTitle = pageInfo.title;
+              console.log('Got detailed page title from content script:', this.currentTitle);
+            }
+          }
+        } catch (contentError) {
+          console.log('Content script not available, using basic tab info:', contentError.message);
+        }
+        
         console.log('Setting URL to:', this.currentUrl);
+        console.log('Setting title to:', this.currentTitle);
         
         // Update URL input
         const urlInput = document.getElementById('url');
@@ -77,7 +107,7 @@ class QRCodeGeneratorPopup {
         // Auto-generate filename from title
         this.generateFilename();
         
-        this.showMessage('Current page URL loaded!', 'success');
+        this.showMessage('Current page URL and title loaded!', 'success');
       } else {
         console.error('No URL in response:', response);
         this.showMessage('Could not get current page URL', 'error');
@@ -222,23 +252,43 @@ class QRCodeGeneratorPopup {
       
       let filename = '';
       
-      if (url.hostname.includes('stars.mc')) {
-        // Special handling for Stars.mc URLs
-        const filteredParts = pathParts.filter(part => 
-          !['voitures', 'occasion', 'monaco', 'autre'].includes(part.toLowerCase())
-        );
-        filename = filteredParts.join('-');
-      } else {
-        // Normal breadcrumb-based naming
-        filename = pathParts.join('-');
+      // Use page title if available, otherwise fall back to URL path
+      if (this.currentTitle && this.currentTitle.trim()) {
+        // Clean the page title for filename use
+        filename = this.currentTitle
+          .replace(/[^a-zA-Z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
+          .replace(/\s+/g, '-') // Replace spaces with hyphens
+          .replace(/-+/g, '-') // Replace multiple hyphens with single
+          .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
+          .toLowerCase()
+          .substring(0, 50); // Limit length to 50 characters
+        
+        // If title is too short or empty after cleaning, fall back to URL path
+        if (filename.length < 3) {
+          filename = '';
+        }
       }
       
-      // Clean up filename
-      filename = filename
-        .replace(/[^a-zA-Z0-9-]/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '')
-        .toLowerCase();
+      // Fall back to URL path-based naming if no title or title too short
+      if (!filename) {
+        if (url.hostname.includes('stars.mc')) {
+          // Special handling for Stars.mc URLs
+          const filteredParts = pathParts.filter(part => 
+            !['voitures', 'occasion', 'monaco', 'autre'].includes(part.toLowerCase())
+          );
+          filename = filteredParts.join('-');
+        } else {
+          // Normal breadcrumb-based naming
+          filename = pathParts.join('-');
+        }
+        
+        // Clean up filename
+        filename = filename
+          .replace(/[^a-zA-Z0-9-]/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '')
+          .toLowerCase();
+      }
       
       if (!filename) {
         filename = 'qr-code';
@@ -252,7 +302,33 @@ class QRCodeGeneratorPopup {
       const filenameInput = document.getElementById('filename');
       if (filenameInput) {
         filenameInput.value = filename;
+        
+        // Add visual indicator if title was used
+        const titleStatus = document.getElementById('title-status');
+        if (this.currentTitle && this.currentTitle.trim()) {
+          filenameInput.placeholder = `Auto-generated from: "${this.currentTitle}"`;
+          filenameInput.title = `Generated from page title: "${this.currentTitle}"`;
+          
+          // Show title status indicator
+          if (titleStatus) {
+            titleStatus.style.display = 'flex';
+            const statusText = titleStatus.querySelector('.status-text');
+            if (statusText) {
+              statusText.textContent = `Page title loaded: "${this.currentTitle}"`;
+            }
+          }
+        } else {
+          filenameInput.placeholder = 'Auto-generated from URL path';
+          filenameInput.title = 'Generated from URL path';
+          
+          // Hide title status indicator
+          if (titleStatus) {
+            titleStatus.style.display = 'none';
+          }
+        }
       }
+      
+      console.log('Generated filename from title:', this.currentTitle, '→', filename);
     } catch (error) {
       console.error('Error generating filename:', error);
     }
@@ -261,49 +337,62 @@ class QRCodeGeneratorPopup {
   async generateQRCode() {
     const urlInput = document.getElementById('url');
     const campaignSelect = document.getElementById('campaign');
-    const sourceInput = document.getElementById('source');
-    const mediumInput = document.getElementById('medium');
+    const sourceInput = document.getElementById('utm-source');
+    const mediumInput = document.getElementById('utm-medium');
+    const termInput = document.getElementById('utm-term');
+    const contentInput = document.getElementById('utm-content');
     const formatSelect = document.getElementById('format');
     const sizeInput = document.getElementById('size');
     const filenameInput = document.getElementById('filename');
-    const autoShortenToggle = document.getElementById('autoShorten');
-    const analyticsToggle = document.getElementById('trackAnalytics');
     
     if (!urlInput || !urlInput.value) {
       this.showMessage('Please enter a URL', 'error');
       return;
     }
     
-    let finalUrl = urlInput.value;
-    
-    // Add UTM parameters
-    const utmParams = {};
-    if (campaignSelect && campaignSelect.value) {
-      utmParams.utm_campaign = campaignSelect.value;
-    }
-    if (sourceInput && sourceInput.value) {
-      utmParams.utm_source = sourceInput.value;
-    }
-    if (mediumInput && mediumInput.value) {
-      utmParams.utm_medium = mediumInput.value;
+    // Validate URL
+    if (!this.isValidUrl(urlInput.value)) {
+      this.showMessage('Please enter a valid URL', 'error');
+      return;
     }
     
-    if (Object.keys(utmParams).length > 0) {
-      const url = new URL(finalUrl);
-      Object.keys(utmParams).forEach(key => {
-        url.searchParams.set(key, utmParams[key]);
+    let originalUrl = urlInput.value;
+    
+    // Build UTM parameters (same as main app)
+    const utmParams = {
+      utm_source: sourceInput?.value || 'chrome_extension',
+      utm_medium: mediumInput?.value || 'qr_code',
+      utm_campaign: campaignSelect?.value || '',
+      utm_term: termInput?.value || '',
+      utm_content: contentInput?.value || ''
+    };
+    
+    // Build URL with UTM parameters (same as main app)
+    let urlWithUTM = originalUrl;
+    if (utmParams.utm_campaign || utmParams.utm_source || utmParams.utm_medium || utmParams.utm_term || utmParams.utm_content) {
+      const url = new URL(originalUrl);
+      Object.entries(utmParams).forEach(([key, value]) => {
+        if (value && value.trim()) {
+          url.searchParams.set(key, value.trim());
+        }
       });
-      finalUrl = url.toString();
+      urlWithUTM = url.toString();
     }
     
-    // Generate QR code with the original URL (with UTM parameters)
+    console.log('🔗 Original URL:', originalUrl);
+    console.log('🔗 URL with UTM parameters:', urlWithUTM);
+    
     const format = formatSelect?.value || 'png';
-    const size = parseInt(sizeInput?.value) || 256;
+    const size = 300; // Fixed size to match main app
     
     try {
       // Create a short URL for tracking (same as main app)
-      const shortUrl = this.createShortUrl(finalUrl);
-      console.log('🔗 Created short URL for tracking:', shortUrl);
+      console.log('🔗 Creating short URL for tracking...');
+      const shortUrl = this.createShortUrl(urlWithUTM);
+      console.log('🔗 Generated short URL for tracking:', shortUrl);
+      
+      // Save the shortened URL mapping for tracking
+      this.saveShortUrl(shortUrl.split('/').pop() || '', urlWithUTM);
       
       // Generate QR code using the short URL for tracking
       const qrCodeDataUrl = await this.generateQRCodeDataUrl(shortUrl, format, size);
@@ -314,8 +403,8 @@ class QRCodeGeneratorPopup {
       link.download = filenameInput?.value || `qr-code.${format}`;
       link.click();
       
-      // Save to database with short URL for tracking
-      await this.saveQRCode(finalUrl, shortUrl, filenameInput?.value || `qr-code.${format}`, format, utmParams);
+      // Save to database with proper data structure (same as main app)
+      await this.saveQRCode(originalUrl, shortUrl, filenameInput?.value || `qr-code.${format}`, format, utmParams, urlWithUTM);
       
       this.showMessage('QR Code generated and saved to database!', 'success');
     } catch (error) {
@@ -325,23 +414,83 @@ class QRCodeGeneratorPopup {
   }
 
   async generateQRCodeDataUrl(url, format, size) {
-    // Use QR Server API for simplicity
-    const qrServerUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(url)}&format=${format}`;
-    
-    const response = await fetch(qrServerUrl);
-    if (!response.ok) {
-      throw new Error('Failed to generate QR code');
+    // Use the same QR code library as the main app for consistency
+    try {
+      // Check if QRCode library is available globally
+      if (typeof QRCode !== 'undefined') {
+        console.log('📱 Using QRCode library for consistent styling...');
+        
+        if (format === 'svg') {
+          // Generate SVG with same settings as main app
+          const qrSvg = await QRCode.toString(url, {
+            type: 'svg',
+            width: 300, // Fixed size to match main app
+            margin: 2, // Same margin as main app
+            color: {
+              dark: '#000000',
+              light: '#FFFFFF'
+            }
+          });
+          
+          // Convert SVG to data URL
+          const svgBlob = new Blob([qrSvg], { type: 'image/svg+xml' });
+          return URL.createObjectURL(svgBlob);
+        } else {
+          // Generate PNG with same settings as main app
+          const qrDataUrl = await QRCode.toDataURL(url, {
+            width: 300, // Fixed size to match main app
+            margin: 2, // Same margin as main app
+            color: {
+              dark: '#000000',
+              light: '#FFFFFF'
+            }
+          });
+          
+          return qrDataUrl;
+        }
+      } else {
+        throw new Error('QRCode library not available');
+      }
+    } catch (error) {
+      console.error('Error generating QR code with library:', error);
+      
+      // Fallback to QR Server API if library fails
+      console.log('🔄 Falling back to QR Server API with margin...');
+      const qrServerUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}&format=${format}&margin=2`;
+      
+      const response = await fetch(qrServerUrl);
+      if (!response.ok) {
+        throw new Error('Failed to generate QR code');
+      }
+      
+      const blob = await response.blob();
+      return URL.createObjectURL(blob);
     }
-    
-    const blob = await response.blob();
-    return URL.createObjectURL(blob);
+  }
+
+  // URL validation (same as main app)
+  isValidUrl(url) {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   // Create short URL (same logic as main app)
   createShortUrl(originalUrl) {
     const shortCode = this.generateShortCode();
-    const baseUrl = 'https://qr-generator-koxf19uh8-pierres-projects-bba7ee64.vercel.app';
+    const baseUrl = 'https://qr-generator-qc0kwk8ul-pierres-projects-bba7ee64.vercel.app';
     return `${baseUrl}/r/${shortCode}`;
+  }
+
+  // Save short URL mapping (same as main app)
+  saveShortUrl(shortCode, originalUrl) {
+    const shortUrls = JSON.parse(localStorage.getItem('shortUrls') || '{}');
+    shortUrls[shortCode] = originalUrl;
+    localStorage.setItem('shortUrls', JSON.stringify(shortUrls));
+    console.log('🔗 Saved short URL mapping:', shortCode, '→', originalUrl);
   }
 
   // Generate short code (same logic as main app)
@@ -363,8 +512,8 @@ class QRCodeGeneratorPopup {
     return url; // Return original URL if shortening fails
   }
 
-  async saveQRCode(originalUrl, shortUrl, filename, format, utmParams) {
-    console.log('🔍 saveQRCode called with:', { originalUrl, shortUrl, filename, format, utmParams });
+  async saveQRCode(originalUrl, shortUrl, filename, format, utmParams, fullUrl) {
+    console.log('🔍 saveQRCode called with:', { originalUrl, shortUrl, filename, format, utmParams, fullUrl });
     
     try {
       // Save to database in background without opening main app
@@ -377,7 +526,8 @@ class QRCodeGeneratorPopup {
           shortUrl,
           filename,
           format,
-          utmParams
+          utmParams,
+          fullUrl
         });
         
         console.log('📡 Database save response:', response);
@@ -387,7 +537,21 @@ class QRCodeGeneratorPopup {
           this.showMessage('QR code saved to database!', 'success');
         } else {
           console.error('❌ Failed to save to database:', response?.error || 'No response');
-          this.showMessage('QR code downloaded but database save failed', 'warning');
+          
+          // Provide more specific error messages based on the error type
+          let errorMessage = 'QR code downloaded but database save failed';
+          if (response?.fallback === 'chrome_storage') {
+            errorMessage = 'QR code saved locally (database connection failed)';
+          } else if (response?.error) {
+            errorMessage = `Database error: ${response.error}`;
+          }
+          
+          this.showMessage(errorMessage, 'warning');
+          
+          // Log detailed error information for debugging
+          if (response?.details) {
+            console.error('📋 Error details:', response.details);
+          }
         }
       } catch (dbError) {
         console.error('❌ Database save failed:', dbError);
@@ -407,6 +571,7 @@ class QRCodeGeneratorPopup {
         console.log('✅ QR code saved to Chrome storage');
       } catch (chromeError) {
         console.error('❌ Failed to save to Chrome storage:', chromeError);
+        this.showMessage('Warning: Could not save to local storage', 'warning');
       }
       
       console.log('🎉 QR code save process completed');
@@ -426,7 +591,15 @@ class QRCodeGeneratorPopup {
         this.showMessage('QR code saved locally due to connection error', 'warning');
       } catch (chromeError) {
         console.error('❌ Error saving to Chrome storage:', chromeError);
-        this.showMessage('Error saving QR code', 'error');
+        this.showMessage('Error: Could not save QR code data', 'error');
+        
+        // Log additional debugging information
+        console.error('📋 Chrome storage error details:', {
+          error: chromeError.message,
+          type: chromeError.name,
+          timestamp: new Date().toISOString(),
+          data: { shortUrl, filename, format }
+        });
       }
     }
   }

@@ -39,6 +39,18 @@
     },
     "api/save-qr-code-admin.js": {
       "maxDuration": 10
+    },
+    "api/save-qr-code-working.js": {
+      "maxDuration": 10
+    },
+    "api/save-qr-code-extension.js": {
+      "maxDuration": 10
+    },
+    "api/save-qr-code-chrome.js": {
+      "maxDuration": 10
+    },
+    "api/track-scan.js": {
+      "maxDuration": 10
     }
   },
   "public": true

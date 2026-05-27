@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page - QR Code Generator Filename Testing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        .filename-example {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+        h1, h2 {
+            color: #495057;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 QR Code Generator - Filename Testing</h1>
+    
+    <div class="test-section">
+        <h2>📝 Current Page Information</h2>
+        <p><strong>Page Title:</strong> <span class="highlight" id="page-title"></span></p>
+        <p><strong>Page URL:</strong> <span class="highlight" id="page-url"></span></p>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Filename Generation Examples</h2>
+        <p>This page demonstrates how the Chrome extension will generate filenames from page titles:</p>
+        
+        <h3>Example 1: This Page</h3>
+        <div class="filename-example">
+            <strong>Original Title:</strong> "Test Page - QR Code Generator Filename Testing"<br>
+            <strong>Generated Filename:</strong> "test-page-qr-code-generator-filename-testing.png"
+        </div>
+
+        <h3>Example 2: E-commerce Product Page</h3>
+        <div class="filename-example">
+            <strong>Original Title:</strong> "Luxury Yacht - Monaco Yachting Services | Stars.mc"<br>
+            <strong>Generated Filename:</strong> "luxury-yacht-monaco-yachting-services-starsmc.png"
+        </div>
+
+        <h3>Example 3: Blog Article</h3>
+        <div class="filename-example">
+            <strong>Original Title:</strong> "Top 10 Luxury Cars in Monaco 2024 - Complete Guide"<br>
+            <strong>Generated Filename:</strong> "top-10-luxury-cars-in-monaco-2024-complete-guide.png"
+        </div>
+
+        <h3>Example 4: Page with Special Characters</h3>
+        <div class="filename-example">
+            <strong>Original Title:</strong> "Bentley Continental GT (2024) - Price & Specs | Stars.mc"<br>
+            <strong>Generated Filename:</strong> "bentley-continental-gt-2024-price-specs-starsmc.png"
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>✅ Improvements Made</h2>
+        <ul>
+            <li><strong>Page Title Integration:</strong> Filenames now use the actual page title instead of just URL paths</li>
+            <li><strong>Smart Fallback:</strong> If title is unavailable, falls back to URL path-based naming</li>
+            <li><strong>Character Cleaning:</strong> Removes special characters and converts spaces to hyphens</li>
+            <li><strong>Length Limiting:</strong> Truncates titles to 50 characters to keep filenames manageable</li>
+            <li><strong>Visual Feedback:</strong> Shows when page title is successfully loaded</li>
+            <li><strong>Content Script Integration:</strong> Uses content script to get more accurate page information</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🚀 How to Test</h2>
+        <ol>
+            <li>Load this page in Chrome</li>
+            <li>Open the QR Code Generator Chrome extension</li>
+            <li>Click "📍 Use Current Page"</li>
+            <li>Check that the filename field shows: <code>test-page-qr-code-generator-filename-testing.png</code></li>
+            <li>Look for the green status indicator showing "Page title loaded"</li>
+        </ol>
+    </div>
+
+    <script>
+        // Display current page information
+        document.getElementById('page-title').textContent = document.title;
+        document.getElementById('page-url').textContent = window.location.href;
+        
+        // Simulate the filename generation logic
+        function generateFilenameFromTitle(title) {
+            if (!title || !title.trim()) return 'qr-code.png';
+            
+            return title
+                .replace(/[^a-zA-Z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
+                .replace(/\s+/g, '-') // Replace spaces with hyphens
+                .replace(/-+/g, '-') // Replace multiple hyphens with single
+                .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
+                .toLowerCase()
+                .substring(0, 50) + '.png'; // Limit length to 50 characters
+        }
+        
+        // Show the actual generated filename for this page
+        const generatedFilename = generateFilenameFromTitle(document.title);
+        console.log('Generated filename for this page:', generatedFilename);
+    </script>
+</body>
+</html> 

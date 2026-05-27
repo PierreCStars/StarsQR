@@ -211,6 +211,44 @@ body {
   grid-column: 1 / -1;
 }
 
+/* QR Settings Section */
+.qr-settings {
+  margin-bottom: 20px;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+/* Make filename full width */
+.settings-grid .form-group:first-child {
+  grid-column: 1 / -1;
+}
+
+/* Title Status Indicator */
+.title-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  font-size: 11px;
+  color: #166534;
+}
+
+.status-icon {
+  font-size: 12px;
+}
+
+.status-text {
+  font-weight: 500;
+}
+
 /* Generate Section */
 .generate-section {
   text-align: center;
