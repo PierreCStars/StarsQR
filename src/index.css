@@ -1,27 +1,58 @@
+@import '@fontsource/montserrat/300.css';
+@import '@fontsource/montserrat/400.css';
+@import '@fontsource/montserrat/500.css';
+@import '@fontsource/montserrat/600.css';
+@import '@fontsource/montserrat/700.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --slg-gold: #D8B11B; --slg-gold-soft: #F6EEC1;
+  --slg-ink: #0A0A0A; --slg-cream: #F5F2EC; --slg-paper: #FBFAF7;
+  --slg-slate: #273341; --slg-line: rgba(10,10,10,.08);
+}
+
 @layer base {
-  body {
-    @apply bg-gray-50 text-gray-900;
+  html { font-family: 'Montserrat', ui-sans-serif, system-ui, sans-serif; }
+  body { @apply bg-cream-paper text-ink antialiased; }
+  h1,h2,h3,h4,h5,h6 { @apply text-ink; line-height: 1.15; }
+  h1 { @apply font-light tracking-tight; }
+  h2 { @apply font-medium tracking-tight; }
+  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--slg-gold); outline-offset: 2px;
   }
 }
 
 @layer components {
+  .eyebrow { @apply text-[11px] font-medium uppercase tracking-[0.28em] text-slate-ardoise; }
+  .filet-gold { @apply inline-block h-px w-12 bg-gold align-middle; }
+
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-gold bg-gold
+           px-6 py-3 text-sm font-semibold uppercase tracking-wider text-ink
+           transition hover:bg-gold-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed;
   }
-  
   .btn-secondary {
-    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-ink bg-transparent
+           px-6 py-3 text-sm font-medium uppercase tracking-wider text-ink
+           transition hover:bg-ink hover:text-white focus:outline-none;
   }
-  
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-transparent
+           px-4 py-2 text-sm text-slate-ardoise transition hover:bg-cream hover:text-ink;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-danger bg-danger
+           px-6 py-3 text-sm font-semibold uppercase tracking-wider text-white transition hover:opacity-90;
+  }
   .input-field {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    @apply block w-full rounded-lg border border-[color:var(--slg-line)] bg-white px-4 py-3 text-[0.95rem] text-ink
+           transition placeholder:text-gray-400 focus:border-gold focus:outline-none
+           focus:ring-4 focus:ring-gold/20;
   }
-  
   .card {
-    @apply bg-white rounded-xl shadow-lg p-6;
+    @apply rounded-2xl border border-[color:var(--slg-line)] bg-white p-7 shadow-card;
   }
-} 
+}
