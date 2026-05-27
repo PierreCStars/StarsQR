@@ -60,7 +60,7 @@ export function QrPreview({
 
           <div className="space-y-3">
             <div className="flex gap-2">
-              <Button variant="secondary" onClick={onDownloadPng} className="flex-1">
+              <Button variant="primary" onClick={onDownloadPng} className="flex-1">
                 <Download className="h-4 w-4" />
                 {t('generator.downloadPng')}
               </Button>
