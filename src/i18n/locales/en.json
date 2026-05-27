@@ -1,0 +1,22 @@
+{
+  "common": { "appName": "QR Studio", "group": "Star Luxury Group" },
+  "nav": { "generator": "Generator", "tracker": "Analytics" },
+  "generator": {
+    "title": "Generate a QR code",
+    "destination": "Destination link",
+    "campaign": "HubSpot campaign",
+    "selectCampaign": "— Select —",
+    "source": "Source", "medium": "Medium", "term": "Term", "content": "Content",
+    "generate": "Generate QR code",
+    "preview": "Preview",
+    "downloadPng": "PNG", "downloadSvg": "SVG",
+    "invalidUrl": "Invalid URL"
+  },
+  "analytics": {
+    "title": "Analytics & tracking",
+    "totalScans": "Total scans", "totalCodes": "QR codes", "recent": "Last 7 days",
+    "scans": "scans", "copy": "Copy", "delete": "Delete", "clearAll": "Clear all",
+    "exportCsv": "Export CSV", "empty": "No QR codes yet"
+  },
+  "footer": { "tagline": "Stars internal tool" }
+}
