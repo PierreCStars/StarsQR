@@ -10,19 +10,25 @@
     "build:prod": "tsc && vite build --mode production",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "deploy": "vercel --prod",
     "deploy:dev": "vercel"
   },
   "dependencies": {
+    "@fontsource/montserrat": "^5.2.8",
     "autoprefixer": "^10.4.16",
     "firebase": "^11.10.0",
     "firebase-admin": "^13.4.0",
+    "i18next": "^26.3.0",
+    "i18next-browser-languagedetector": "^8.2.1",
     "lucide-react": "^0.294.0",
     "nodemailer": "^6.9.7",
     "postcss": "^8.4.32",
     "qrcode": "^1.5.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-i18next": "^17.0.8",
     "tailwindcss": "^3.3.6"
   },
   "devDependencies": {
@@ -38,6 +44,7 @@
     "eslint-plugin-react-refresh": "^0.4.4",
     "typescript": "^5.2.2",
     "vercel": "^44.4.3",
-    "vite": "^4.5.0"
+    "vite": "^4.5.0",
+    "vitest": "^4.1.7"
   }
 }
