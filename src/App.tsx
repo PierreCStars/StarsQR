@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import QRCodeGenerator from './components/QRCodeGenerator';
 import QRCodeTracker from './components/QRCodeTracker';
 import URLRedirect from './components/URLRedirect';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
+import { LanguageSwitcher } from './components/layout/LanguageSwitcher';
 import { QRCodeData } from './types';
 import { getAllQRCodes, deleteQRCode, incrementScanCount, clearAllQRCodes } from './services/firebaseService';
 
 type TabType = 'generator' | 'tracker';
 
 export default function App() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabType>('generator');
   const [qrCodes, setQrCodes] = useState<QRCodeData[]>([]);
 
@@ -109,7 +112,8 @@ export default function App() {
       <Header
         active={activeTab}
         onChange={setActiveTab}
-        labels={{ appName: 'QR Studio', generator: 'Générateur', tracker: 'Analytics' }}
+        labels={{ appName: t('common.appName'), generator: t('nav.generator'), tracker: t('nav.tracker') }}
+        rightSlot={<LanguageSwitcher />}
       />
 
       {/* Main Content */}
