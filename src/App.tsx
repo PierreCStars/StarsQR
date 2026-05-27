@@ -20,13 +20,10 @@ export default function App() {
   useEffect(() => {
     const loadQRCodes = async () => {
       try {
-        console.log('🔄 Loading QR codes from Firebase...');
-
         // Add a small delay to ensure Firebase is fully initialized
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         const qrCodesData = await getAllQRCodes();
-        console.log('📊 Raw QR codes data from Firebase:', qrCodesData);
 
         // Convert Firestore timestamps to Date objects
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -37,9 +34,7 @@ export default function App() {
           lastScanned: qr.lastScanned?.toDate() || undefined
         }));
 
-        console.log('📊 Processed QR codes data:', qrCodesWithDates);
         setQrCodes(qrCodesWithDates);
-        console.log('✅ QR codes loaded successfully. Count:', qrCodesWithDates.length);
       } catch (error) {
         console.error('❌ Error loading QR codes from Firebase:', error);
         // Set empty array to avoid infinite loading state
@@ -51,12 +46,7 @@ export default function App() {
   }, []);
 
   const handleQRCodeGenerated = (qrData: QRCodeData) => {
-    console.log('App: Received QR code data:', qrData);
-    setQrCodes(prev => {
-      const newQrCodes = [qrData, ...prev];
-      console.log('App: Updated QR codes array:', newQrCodes);
-      return newQrCodes;
-    });
+    setQrCodes(prev => [qrData, ...prev]);
     // Don't automatically switch tabs - let user see their generated QR code
   };
 

@@ -122,17 +122,6 @@ export const getAllQRCodes = async (): Promise<QRCodeData[]> => {
   }
 };
 
-export const getQRCodeById = async (id: string): Promise<QRCodeData | null> => {
-  try {
-    const docSnap = await getDocs(collection(db, 'qrCodes'));
-    const qrCode = docSnap.docs.find(doc => doc.id === id);
-    return qrCode ? { id: qrCode.id, ...qrCode.data() } as QRCodeData : null;
-  } catch (error) {
-    console.error('Error fetching QR code:', error);
-    throw error;
-  }
-};
-
 export const updateQRCode = async (id: string, updates: Partial<QRCodeData>): Promise<void> => {
   try {
     const docRef = doc(db, 'qrCodes', id);
@@ -211,21 +200,6 @@ export const getScansByQRCodeId = async (qrCodeId: string): Promise<QRCodeScan[]
     })) as QRCodeScan[];
   } catch (error) {
     console.error('Error fetching scans:', error);
-    throw error;
-  }
-};
-
-export const getQRCodeByShortUrl = async (shortUrl: string): Promise<QRCodeData | null> => {
-  try {
-    const q = query(collection(db, 'qrCodes'), where('shortUrl', '==', shortUrl));
-    const querySnapshot = await getDocs(q);
-    if (!querySnapshot.empty) {
-      const doc = querySnapshot.docs[0];
-      return { id: doc.id, ...doc.data() } as QRCodeData;
-    }
-    return null;
-  } catch (error) {
-    console.error('Error fetching QR code by short URL:', error);
     throw error;
   }
 };

@@ -22,8 +22,6 @@ module.exports = {
         'src/services/firebaseService.ts',
         'src/services/hubspotService.ts',
         'src/utils/urlShortener.ts',
-        'src/components/QRCodeGenerator.tsx',
-        'src/components/QRCodeTracker.tsx',
         'src/components/URLRedirect.tsx',
       ],
       rules: {

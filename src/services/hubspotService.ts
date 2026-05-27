@@ -28,11 +28,7 @@ class HubSpotService {
 
   async getCampaigns(): Promise<HubSpotCampaign[]> {
     try {
-      console.log('🔗 Fetching HubSpot campaigns via serverless function...');
-      
       const campaigns = await this.makeRequest();
-      console.log('✅ Campaigns received from serverless function:', campaigns);
-      
       return campaigns || [];
       
     } catch (error) {

@@ -128,14 +128,18 @@ npm run dev
 
 ```
 src/
-├── components/          # React components
-│   ├── QRCodeGenerator.tsx
-│   ├── QRCodeTracker.tsx
+├── components/
+│   ├── generator/       # QR code generation UI
+│   ├── analytics/       # Scan analytics & tracker UI
+│   ├── layout/          # Header, Footer, LanguageSwitcher
+│   ├── ui/              # Shared design-system primitives
+│   ├── StarIcon.tsx
 │   └── URLRedirect.tsx
 ├── config/             # Firebase configuration
 │   └── firebase.ts
-├── services/           # Firebase service functions
-│   └── firebaseService.ts
+├── services/           # Firebase & HubSpot service functions
+│   ├── firebaseService.ts
+│   └── hubspotService.ts
 ├── types/              # TypeScript type definitions
 │   └── index.ts
 ├── utils/              # Utility functions

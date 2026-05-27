@@ -30,7 +30,7 @@ export function ScanBarList({ qrCodes, onDeleteQRCode, onIncrementScan }: ScanBa
     window.open(url, '_blank');
   };
 
-  // Generate QR code images for download (preserved from QRCodeTracker)
+  // Generate QR code images for download
   const generateQRCodeImages = async (qrCode: QRCodeData) => {
     if (qrCodeImages[qrCode.id]) {
       return; // Already generated

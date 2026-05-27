@@ -69,20 +69,12 @@ export default function GeneratorPage({ onQRCodeGenerated, onGoToAnalytics }: Ge
 
       // Extract page title for better QR code naming
       try {
-        console.log('🔗 Extracting page title...');
         const title = await extractPageTitle(formData.url);
         setPageTitle(title);
 
         // Generate QR code name
         const name = generateQRCodeName(formData.url, title);
         setQrCodeName(name);
-
-        if (title) {
-          console.log('✅ Page title extracted:', title);
-          console.log('✅ QR code name generated:', name);
-        } else {
-          console.log('⚠️ No page title found, using URL-based naming');
-        }
       } catch (error) {
         console.error('❌ Error extracting page title:', error);
         // Fallback to URL-based naming
@@ -110,7 +102,6 @@ export default function GeneratorPage({ onQRCodeGenerated, onGoToAnalytics }: Ge
     try {
       const campaigns = await hubspotService.getCampaignNames();
       setHubspotCampaigns(campaigns);
-      console.log('✅ HubSpot campaigns loaded:', campaigns);
     } catch (error) {
       console.error('❌ Error loading HubSpot campaigns:', error);
       // Set empty array if loading fails - no fallback campaigns
@@ -184,8 +175,6 @@ export default function GeneratorPage({ onQRCodeGenerated, onGoToAnalytics }: Ge
     setIsGenerating(true);
 
     try {
-      console.log('Form data:', formData);
-
       // Use default UTM parameters if not set
       const utmParams = {
         utm_source: formData.utm_source || 'Showroom',
@@ -197,19 +186,14 @@ export default function GeneratorPage({ onQRCodeGenerated, onGoToAnalytics }: Ge
 
       // First, create the URL with UTM parameters
       const urlWithUTM = buildUrlWithUTM(formData.url, utmParams);
-      console.log('🔗 URL with UTM parameters:', urlWithUTM);
 
       // Create a short URL for tracking purposes; the QR code encodes the short URL.
       const { shortCode, shortUrl } = createShortUrl(urlWithUTM);
 
       // Use the short URL for the QR code to enable tracking
       const qrCodeTargetUrl = shortUrl;
-      console.log('🔗 Using short URL for QR code tracking:', qrCodeTargetUrl);
 
       setFinalUrl(qrCodeTargetUrl);
-
-      // Generate QR code using the short URL for tracking
-      console.log('🔗 Generating QR code for URL:', qrCodeTargetUrl);
 
       const qrDataUrl = await QRCode.toDataURL(qrCodeTargetUrl, {
         width: 300,
