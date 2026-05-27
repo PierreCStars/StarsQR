@@ -5,7 +5,6 @@ import { QRCodeFormData, QRCodeData } from '../../types';
 import { buildUrlWithUTM } from '../../utils/utm';
 import {
   createShortUrl,
-  saveShortUrl,
   validateUrl,
   extractPageTitle,
   generateQRCodeName,
@@ -200,16 +199,8 @@ export default function GeneratorPage({ onQRCodeGenerated, onGoToAnalytics }: Ge
       const urlWithUTM = buildUrlWithUTM(formData.url, utmParams);
       console.log('🔗 URL with UTM parameters:', urlWithUTM);
 
-      // Create a short URL for tracking purposes, but use the original URL for the QR code
-      console.log('🔗 Creating short URL for tracking...');
-      const shortUrl = createShortUrl(urlWithUTM);
-      console.log('🔗 Generated short URL for tracking:', shortUrl);
-
-      const shortCode = shortUrl.split('/').pop() || '';
-      console.log('🔗 Short code:', shortCode);
-
-      // Save the shortened URL mapping for tracking
-      saveShortUrl(shortCode, urlWithUTM);
+      // Create a short URL for tracking purposes; the QR code encodes the short URL.
+      const { shortCode, shortUrl } = createShortUrl(urlWithUTM);
 
       // Use the short URL for the QR code to enable tracking
       const qrCodeTargetUrl = shortUrl;
@@ -251,6 +242,7 @@ export default function GeneratorPage({ onQRCodeGenerated, onGoToAnalytics }: Ge
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const qrData: any = {
         originalUrl: formData.url,
+        shortCode, // Persisted for the serverless redirect lookup
         shortUrl, // Use the short URL for tracking
         utmSource: formData.utm_source,
         utmMedium: formData.utm_medium,
@@ -274,6 +266,7 @@ export default function GeneratorPage({ onQRCodeGenerated, onGoToAnalytics }: Ge
       const qrDataForState: QRCodeData = {
         id: firebaseId,
         originalUrl: formData.url,
+        shortCode,
         shortUrl, // Use the short URL for tracking
         utmSource: formData.utm_source,
         utmMedium: formData.utm_medium,

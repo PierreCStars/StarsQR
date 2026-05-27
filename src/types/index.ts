@@ -9,6 +9,7 @@ export interface UTMParams {
 export interface QRCodeData {
   id: string;
   originalUrl: string;
+  shortCode: string;
   shortUrl: string;
   utmSource: string;
   utmMedium: string;

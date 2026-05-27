@@ -16,6 +16,7 @@ import { db } from '../config/firebase';
 export interface QRCodeData {
   id?: string;
   originalUrl: string;
+  shortCode: string;
   shortUrl: string;
   utmSource: string;
   utmMedium: string;
@@ -45,44 +46,33 @@ export const createQRCode = async (qrData: Omit<QRCodeData, 'id' | 'createdAt' |
   
   while (retries > 0) {
     try {
-      console.log(`🔥 Firebase: Attempt ${4 - retries}/3 to create QR code...`);
-      console.log('🔥 Firebase: Received data:', JSON.stringify(qrData, null, 2));
-      
       // Filter out undefined values
       const cleanData = Object.fromEntries(
-        Object.entries(qrData).filter(([key, value]) => {
-          console.log(`🔥 Firebase: Checking field ${key}:`, value, typeof value);
-          return value !== undefined;
-        })
+        Object.entries(qrData).filter(([, value]) => value !== undefined)
       );
-      
-      console.log('🔥 Firebase: Clean data for Firebase:', JSON.stringify(cleanData, null, 2));
-      
-      console.log('🔥 Firebase: Creating document in qrCodes collection...');
+
       const docRef = await addDoc(collection(db, 'qrCodes'), {
         ...cleanData,
         scanCount: 0,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
-      
-      console.log('🔥 Firebase: Document created successfully with ID:', docRef.id);
+
       return docRef.id;
     } catch (error) {
       retries--;
-      console.error(`❌ Firebase: Retry ${3 - retries}/3 due to error:`, error);
+      console.error('❌ Firebase: Retry %d/3 to create QR code due to error:', 3 - retries, error);
       console.error('❌ Firebase: Error details:', {
         code: (error as any).code,
         message: (error as any).message,
         stack: (error as any).stack
       });
-      
+
       if (retries === 0) {
         console.error('❌ Firebase: All retries exhausted, throwing error');
         throw error;
       }
-      
-      console.log(`🔥 Firebase: Waiting ${delay}ms before retry...`);
+
       await new Promise(resolve => setTimeout(resolve, delay));
       delay *= 2; // Exponential backoff
     }
@@ -94,46 +84,35 @@ export const createQRCode = async (qrData: Omit<QRCodeData, 'id' | 'createdAt' |
 
 export const getAllQRCodes = async (): Promise<QRCodeData[]> => {
   try {
-    console.log('🔥 Firebase: Getting all QR codes...');
-    
     // Add retry logic with exponential backoff
     let retries = 3;
     let delay = 1000; // Start with 1 second delay
-    
+
     while (retries > 0) {
       try {
-        console.log(`🔥 Firebase: Attempt ${4 - retries}/3 to fetch QR codes...`);
         const q = query(collection(db, 'qrCodes'), orderBy('createdAt', 'desc'));
-        console.log('🔥 Firebase: Query created, executing...');
         const querySnapshot = await getDocs(q);
-        console.log('🔥 Firebase: Query executed. Found documents:', querySnapshot.size);
-        
-        const qrCodes = querySnapshot.docs.map(doc => {
-          const data = doc.data();
-          console.log('🔥 Firebase: Document data:', { id: doc.id, ...data });
-          return {
-            id: doc.id,
-            ...data
-          };
-        }) as QRCodeData[];
-        
-        console.log('🔥 Firebase: Returning QR codes:', qrCodes);
+
+        const qrCodes = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as QRCodeData[];
+
         return qrCodes;
       } catch (error) {
         retries--;
-        console.log(`🔥 Firebase: Retry ${3 - retries}/3 due to error:`, error);
-        console.log(`🔥 Firebase: Waiting ${delay}ms before retry...`);
-        
+        console.error('❌ Firebase: Retry %d/3 fetching QR codes due to error:', 3 - retries, error);
+
         if (retries === 0) {
           console.error('❌ Firebase: All retries exhausted, returning empty array');
           return [];
         }
-        
+
         await new Promise(resolve => setTimeout(resolve, delay));
         delay *= 2; // Exponential backoff
       }
     }
-    
+
     // This should never be reached, but TypeScript requires it
     return [];
   } catch (error) {
@@ -179,17 +158,12 @@ export const deleteQRCode = async (id: string): Promise<void> => {
 
 export const clearAllQRCodes = async (): Promise<void> => {
   try {
-    console.log('🔥 Firebase: Clearing all QR codes...');
-    
     // Get all QR code documents
     const querySnapshot = await getDocs(collection(db, 'qrCodes'));
-    console.log(`🔥 Firebase: Found ${querySnapshot.size} QR codes to delete`);
-    
+
     // Delete each document
     const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
     await Promise.all(deletePromises);
-    
-    console.log('🔥 Firebase: All QR codes deleted successfully');
   } catch (error) {
     console.error('Error clearing all QR codes:', error);
     throw error;
@@ -254,4 +228,11 @@ export const getQRCodeByShortUrl = async (shortUrl: string): Promise<QRCodeData 
     console.error('Error fetching QR code by short URL:', error);
     throw error;
   }
-}; 
+};
+
+export const getQRCodeByShortCode = async (shortCode: string): Promise<QRCodeData | null> => {
+  const q = query(collection(db, 'qrCodes'), where('shortCode', '==', shortCode));
+  const snap = await getDocs(q);
+  if (!snap.empty) { const d = snap.docs[0]; return { id: d.id, ...d.data() } as QRCodeData; }
+  return null;
+};

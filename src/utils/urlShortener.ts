@@ -11,14 +11,11 @@ export function generateShortCode(): string {
   return result;
 }
 
-export function createShortUrl(_originalUrl: string): string {
-  // For demo purposes, we'll create a simple short URL
-  // In production, this would typically use a service like Bitly, TinyURL, etc.
+export function createShortUrl(_originalUrl: string): { shortCode: string; shortUrl: string } {
+  // Generate a short code and build the full short URL pointing to the serverless redirect.
   const shortCode = generateShortCode();
-  
-  // You could replace this with your own domain
   const baseUrl = window.location.origin;
-  return `${baseUrl}/r/${shortCode}`;
+  return { shortCode, shortUrl: `${baseUrl}/r/${shortCode}` };
 }
 
 export function validateUrl(url: string): boolean {
@@ -29,18 +26,6 @@ export function validateUrl(url: string): boolean {
     return false;
   }
 }
-
-// Store shortened URLs in localStorage for demo purposes
-export function saveShortUrl(shortCode: string, originalUrl: string): void {
-  const shortUrls = JSON.parse(localStorage.getItem('shortUrls') || '{}');
-  shortUrls[shortCode] = originalUrl;
-  localStorage.setItem('shortUrls', JSON.stringify(shortUrls));
-}
-
-export function getOriginalUrl(shortCode: string): string | null {
-  const shortUrls = JSON.parse(localStorage.getItem('shortUrls') || '{}');
-  return shortUrls[shortCode] || null;
-} 
 
 export const extractPageTitle = async (url: string): Promise<string> => {
   try {

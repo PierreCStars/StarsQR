@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import GeneratorPage from './components/generator/GeneratorPage';
 import AnalyticsPage from './components/analytics/AnalyticsPage';
-import URLRedirect from './components/URLRedirect';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { LanguageSwitcher } from './components/layout/LanguageSwitcher';
@@ -16,14 +15,9 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('generator');
   const [qrCodes, setQrCodes] = useState<QRCodeData[]>([]);
 
-  // Check if we're on a redirect route
-  const path = window.location.pathname;
-  const redirectMatch = path.match(/^\/r\/([a-zA-Z0-9]+)$/);
-
-  // Load QR codes from Firebase on component mount (skipped on redirect routes)
+  // Load QR codes from Firebase on component mount.
+  // The /r/:code redirect route is handled entirely server-side (api/r/[code].js).
   useEffect(() => {
-    if (redirectMatch) return;
-
     const loadQRCodes = async () => {
       try {
         console.log('🔄 Loading QR codes from Firebase...');
@@ -54,13 +48,7 @@ export default function App() {
     };
 
     loadQRCodes();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  if (redirectMatch) {
-    const shortCode = redirectMatch[1];
-    return <URLRedirect shortCode={shortCode} />;
-  }
 
   const handleQRCodeGenerated = (qrData: QRCodeData) => {
     console.log('App: Received QR code data:', qrData);
