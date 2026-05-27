@@ -37,7 +37,12 @@
     "title": "Analytics e monitoraggio",
     "totalScans": "Scansioni totali", "totalCodes": "QR code", "recent": "Ultimi 7 giorni",
     "scans": "scansioni", "copy": "Copia", "delete": "Elimina", "clearAll": "Cancella tutto",
-    "exportCsv": "Esporta CSV", "empty": "Ancora nessun QR code"
+    "exportCsv": "Esporta CSV", "empty": "Ancora nessun QR code",
+    "openUrl": "Apri URL", "simulateScan": "Simula una scansione",
+    "downloadPng": "Scarica PNG", "downloadSvg": "Scarica SVG",
+    "created": "Creato il", "lastScan": "Ultima scansione",
+    "clearTitle": "Cancella tutto", "clearConfirm": "Vuoi davvero eliminare tutti i QR code? Questa azione è irreversibile.",
+    "cancel": "Annulla"
   },
   "footer": { "tagline": "Strumento interno Stars" }
 }

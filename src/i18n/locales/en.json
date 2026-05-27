@@ -37,7 +37,12 @@
     "title": "Analytics & tracking",
     "totalScans": "Total scans", "totalCodes": "QR codes", "recent": "Last 7 days",
     "scans": "scans", "copy": "Copy", "delete": "Delete", "clearAll": "Clear all",
-    "exportCsv": "Export CSV", "empty": "No QR codes yet"
+    "exportCsv": "Export CSV", "empty": "No QR codes yet",
+    "openUrl": "Open URL", "simulateScan": "Simulate a scan",
+    "downloadPng": "Download PNG", "downloadSvg": "Download SVG",
+    "created": "Created", "lastScan": "Last scan",
+    "clearTitle": "Clear all", "clearConfirm": "Are you sure you want to delete all QR codes? This action cannot be undone.",
+    "cancel": "Cancel"
   },
   "footer": { "tagline": "Stars internal tool" }
 }

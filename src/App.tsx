@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import GeneratorPage from './components/generator/GeneratorPage';
-import QRCodeTracker from './components/QRCodeTracker';
+import AnalyticsPage from './components/analytics/AnalyticsPage';
 import URLRedirect from './components/URLRedirect';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
@@ -124,7 +124,7 @@ export default function App() {
             onGoToAnalytics={() => setActiveTab('tracker')}
           />
         ) : (
-          <QRCodeTracker
+          <AnalyticsPage
             qrCodes={qrCodes}
             onDeleteQRCode={handleDeleteQRCode}
             onIncrementScan={handleIncrementScan}
