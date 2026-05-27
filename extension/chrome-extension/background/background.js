@@ -136,8 +136,9 @@ async function saveToDatabase(originalUrl, shortUrl, filename, format, utmParams
       utmParams: utmParams || {}
     };
 
-    // Call the consolidated API endpoint
-    const response = await fetch('https://qr-generator-qc0kwk8ul-pierres-projects-bba7ee64.vercel.app/api/save-qr-code', {
+    // Call the consolidated API endpoint on the stable production domain
+    // (not a per-deploy preview URL, which would expire).
+    const response = await fetch('https://qr-generator.vercel.app/api/save-qr-code', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
