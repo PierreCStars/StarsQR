@@ -481,7 +481,7 @@ class QRCodeGeneratorPopup {
   // Create short URL (same logic as main app)
   createShortUrl(originalUrl) {
     const shortCode = this.generateShortCode();
-    const baseUrl = 'https://qr-generator-qc0kwk8ul-pierres-projects-bba7ee64.vercel.app';
+    const baseUrl = 'https://qr-generator.vercel.app';
     return `${baseUrl}/r/${shortCode}`;
   }
 

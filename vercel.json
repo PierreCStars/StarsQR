@@ -14,8 +14,7 @@
   ],
   "functions": {
     "api/r/[code].js": { "maxDuration": 10 },
-    "api/track-scan.js": { "maxDuration": 10 },
-    "api/save-qr-code.js": { "maxDuration": 10 },
+"api/save-qr-code.js": { "maxDuration": 10 },
     "api/send-scan-notification.js": { "maxDuration": 10 },
     "api/extract-title.js": { "maxDuration": 10 },
     "api/hubspot-campaigns.js": { "maxDuration": 10 }

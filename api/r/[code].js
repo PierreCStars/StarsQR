@@ -17,6 +17,7 @@ export default async function handler(req, res) {
     const docSnap = snap.docs[0];
     const data = docSnap.data();
     const target = data.fullUrl || data.originalUrl;
+    if (!target) return res.status(404).send('QR code introuvable');
 
     try {
       await updateDoc(doc(db, 'qrCodes', docSnap.id), { scanCount: increment(1), lastScanned: serverTimestamp(), updatedAt: serverTimestamp() });

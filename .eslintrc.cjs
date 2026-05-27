@@ -22,7 +22,6 @@ module.exports = {
         'src/services/firebaseService.ts',
         'src/services/hubspotService.ts',
         'src/utils/urlShortener.ts',
-        'src/components/URLRedirect.tsx',
       ],
       rules: {
         '@typescript-eslint/no-explicit-any': 'off',
