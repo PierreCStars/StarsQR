@@ -50,3 +50,6 @@ ui-debug.log
 *.tmp
 *.temp 
 .vercel
+
+# Superpowers brainstorm (local, non versionné)
+.superpowers/
