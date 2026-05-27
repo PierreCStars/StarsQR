@@ -127,22 +127,17 @@ async function saveToDatabase(originalUrl, shortUrl, filename, format, utmParams
   try {
     console.log('🔥 Saving QR code to database:', { originalUrl, shortUrl, filename, format, utmParams, fullUrl });
 
-    // Prepare the QR code data (matching main app structure)
+    // Prepare the QR code data for the consolidated /api/save-qr-code endpoint,
+    // which expects { url, filename, format, utmParams }.
     const qrData = {
-      originalUrl: originalUrl,
-      shortUrl: shortUrl,
+      url: fullUrl || originalUrl,
       filename: filename,
       format: format,
-      utmSource: utmParams?.utm_source || 'chrome_extension',
-      utmMedium: utmParams?.utm_medium || 'qr_code',
-      utmCampaign: utmParams?.utm_campaign || '',
-      utmTerm: utmParams?.utm_term || '',
-      utmContent: utmParams?.utm_content || '',
-      fullUrl: fullUrl || originalUrl
+      utmParams: utmParams || {}
     };
 
-    // Call the API endpoint
-    const response = await fetch('https://qr-generator-qc0kwk8ul-pierres-projects-bba7ee64.vercel.app/api/save-qr-code-chrome.js', {
+    // Call the consolidated API endpoint
+    const response = await fetch('https://qr-generator-qc0kwk8ul-pierres-projects-bba7ee64.vercel.app/api/save-qr-code', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
