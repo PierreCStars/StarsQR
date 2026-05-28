@@ -25,13 +25,13 @@ export default function App() {
 
         const qrCodesData = await getAllQRCodes();
 
-        // Convert Firestore timestamps to Date objects
+        // The API returns timestamps as epoch-millis numbers (or null).
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const qrCodesWithDates = qrCodesData.map((qr: any) => ({
           ...qr,
-          createdAt: qr.createdAt?.toDate() || new Date(),
-          updatedAt: qr.updatedAt?.toDate() || new Date(),
-          lastScanned: qr.lastScanned?.toDate() || undefined
+          createdAt: qr.createdAt ? new Date(qr.createdAt) : new Date(),
+          updatedAt: qr.updatedAt ? new Date(qr.updatedAt) : new Date(),
+          lastScanned: qr.lastScanned ? new Date(qr.lastScanned) : undefined
         }));
 
         setQrCodes(qrCodesWithDates);
