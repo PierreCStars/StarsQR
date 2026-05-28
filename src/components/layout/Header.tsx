@@ -20,7 +20,7 @@ export function Header({ active, onChange, labels, rightSlot }: Props) {
     <header className="sticky top-0 z-50 border-b border-black/5 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
         <a href="/" className="flex shrink-0 items-center gap-3">
-          <img src="/star-logo.png" alt="Stars" className="h-9 w-9" />
+          <img src="/star-logo.png" alt="Stars" className="h-9 w-9 object-contain" />
           <span className="hidden flex-col leading-none sm:flex">
             <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-slate-ardoise">Star Luxury Group</span>
             <span className="text-sm font-semibold tracking-wide text-ink">{labels.appName}</span>

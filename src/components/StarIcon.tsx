@@ -2,16 +2,16 @@ import React from 'react';
 
 interface StarIconProps {
   className?: string;
-  size?: number;
 }
 
-export const StarIcon: React.FC<StarIconProps> = ({ className = "", size = 24 }) => {
+// Sizing is controlled by the caller via Tailwind classes (e.g. h-9 w-9, h-16 w-16).
+// `object-contain` preserves the logo's aspect ratio (the PNG is 4025x3064, not square).
+export const StarIcon: React.FC<StarIconProps> = ({ className = "" }) => {
   return (
-    <img 
+    <img
       src="/star-logo.png"
       alt="Stars Logo"
-      className={className}
-      style={{ width: size, height: size }}
+      className={`object-contain ${className}`}
     />
   );
 }; 
