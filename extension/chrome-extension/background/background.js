@@ -65,7 +65,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       
     case 'saveToDatabase':
       console.log('🔥 saveToDatabase requested with:', request);
-      saveToDatabase(request.originalUrl, request.shortUrl, request.filename, request.format, request.utmParams, request.fullUrl)
+      saveToDatabase(request.originalUrl, request.shortCode, request.shortUrl, request.filename, request.format, request.utmParams, request.fullUrl)
         .then((result) => {
           console.log('✅ Database save result:', result);
           try {
@@ -123,17 +123,20 @@ chrome.action.onClicked.addListener((tab) => {
 });
 
 // Save QR code to database via API
-async function saveToDatabase(originalUrl, shortUrl, filename, format, utmParams, fullUrl) {
+async function saveToDatabase(originalUrl, shortCode, shortUrl, filename, format, utmParams, fullUrl) {
   try {
-    console.log('🔥 Saving QR code to database:', { originalUrl, shortUrl, filename, format, utmParams, fullUrl });
+    console.log('🔥 Saving QR code to database:', { originalUrl, shortCode, shortUrl, filename, format, utmParams, fullUrl });
 
     // Prepare the QR code data for the consolidated /api/save-qr-code endpoint,
-    // which expects { url, filename, format, utmParams }.
+    // which accepts { url, filename, format, utmParams, shortCode, shortUrl }.
+    // shortCode is required so the serverless redirect can resolve scans of the QR.
     const qrData = {
       url: fullUrl || originalUrl,
       filename: filename,
       format: format,
-      utmParams: utmParams || {}
+      utmParams: utmParams || {},
+      shortCode,
+      shortUrl
     };
 
     // Call the consolidated API endpoint on the stable production domain

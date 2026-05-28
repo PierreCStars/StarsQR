@@ -388,23 +388,21 @@ class QRCodeGeneratorPopup {
     try {
       // Create a short URL for tracking (same as main app)
       console.log('🔗 Creating short URL for tracking...');
-      const shortUrl = this.createShortUrl(urlWithUTM);
-      console.log('🔗 Generated short URL for tracking:', shortUrl);
-      
-      // Save the shortened URL mapping for tracking
-      this.saveShortUrl(shortUrl.split('/').pop() || '', urlWithUTM);
-      
+      const { shortCode, shortUrl } = this.createShortUrl(urlWithUTM);
+      console.log('🔗 Generated short URL for tracking:', shortUrl, 'shortCode:', shortCode);
+
       // Generate QR code using the short URL for tracking
       const qrCodeDataUrl = await this.generateQRCodeDataUrl(shortUrl, format, size);
-      
+
       // Create download link
       const link = document.createElement('a');
       link.href = qrCodeDataUrl;
       link.download = filenameInput?.value || `qr-code.${format}`;
       link.click();
-      
-      // Save to database with proper data structure (same as main app)
-      await this.saveQRCode(originalUrl, shortUrl, filenameInput?.value || `qr-code.${format}`, format, utmParams, urlWithUTM);
+
+      // Save to database with proper data structure (same as main app).
+      // shortCode is required so the serverless redirect can resolve the QR.
+      await this.saveQRCode(originalUrl, shortCode, shortUrl, filenameInput?.value || `qr-code.${format}`, format, utmParams, urlWithUTM);
       
       this.showMessage('QR Code generated and saved to database!', 'success');
     } catch (error) {
@@ -479,10 +477,12 @@ class QRCodeGeneratorPopup {
   }
 
   // Create short URL (same logic as main app)
-  createShortUrl(originalUrl) {
+  // Returns { shortCode, shortUrl } so callers can persist the code server-side
+  // (the server uses shortCode for the redirect lookup).
+  createShortUrl(_originalUrl) {
     const shortCode = this.generateShortCode();
     const baseUrl = 'https://qr-generator-pierres-projects-bba7ee64.vercel.app';
-    return `${baseUrl}/r/${shortCode}`;
+    return { shortCode, shortUrl: `${baseUrl}/r/${shortCode}` };
   }
 
   // Save short URL mapping (same as main app)
@@ -512,17 +512,18 @@ class QRCodeGeneratorPopup {
     return url; // Return original URL if shortening fails
   }
 
-  async saveQRCode(originalUrl, shortUrl, filename, format, utmParams, fullUrl) {
-    console.log('🔍 saveQRCode called with:', { originalUrl, shortUrl, filename, format, utmParams, fullUrl });
-    
+  async saveQRCode(originalUrl, shortCode, shortUrl, filename, format, utmParams, fullUrl) {
+    console.log('🔍 saveQRCode called with:', { originalUrl, shortCode, shortUrl, filename, format, utmParams, fullUrl });
+
     try {
       // Save to database in background without opening main app
       console.log('🔄 Saving to database in background...');
-      
+
       try {
         const response = await chrome.runtime.sendMessage({
           action: 'saveToDatabase',
           originalUrl,
+          shortCode,
           shortUrl,
           filename,
           format,
