@@ -36,16 +36,21 @@ cp -r background build/
 cp -r content build/
 cp -r icons build/
 cp manifest.json build/
+cp firebase-save.html build/
 cp README.md build/
 cp FIREBASE_SETUP.md build/
 
-# Create a zip file for easy installation
+# Versioned zip name (read version from manifest)
+VERSION=$(grep -E '"version"' manifest.json | head -1 | sed -E 's/.*"version": "([^"]+)".*/\1/')
+ZIP_NAME="qr-code-generator-extension-v${VERSION}.zip"
+
+# Create a zip file for easy installation (versioned filename)
 cd build
-zip -r ../qr-code-generator-extension.zip .
+zip -r "../${ZIP_NAME}" .
 cd ..
 
 echo "✅ Extension built successfully!"
-echo "📦 Extension package: qr-code-generator-extension.zip"
+echo "📦 Extension package: ${ZIP_NAME}"
 echo ""
 echo "🚀 To install in Chrome:"
 echo "1. Go to chrome://extensions/"
