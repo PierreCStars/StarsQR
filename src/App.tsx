@@ -20,9 +20,6 @@ export default function App() {
   useEffect(() => {
     const loadQRCodes = async () => {
       try {
-        // Add a small delay to ensure Firebase is fully initialized
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
         const qrCodesData = await getAllQRCodes();
 
         // The API returns timestamps as epoch-millis numbers (or null).
