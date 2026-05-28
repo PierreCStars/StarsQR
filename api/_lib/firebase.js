@@ -1,16 +1,14 @@
-import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import admin from 'firebase-admin';
 
-const clean = (v) => (v ? String(v).trim().replace(/[\r\n]/g, '') : v);
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    }),
+  });
+}
 
-const config = {
-  apiKey: clean(process.env.VITE_FIREBASE_API_KEY),
-  authDomain: clean(process.env.VITE_FIREBASE_AUTH_DOMAIN),
-  projectId: clean(process.env.VITE_FIREBASE_PROJECT_ID),
-  storageBucket: clean(process.env.VITE_FIREBASE_STORAGE_BUCKET),
-  messagingSenderId: clean(process.env.VITE_FIREBASE_MESSAGING_SENDER_ID),
-  appId: clean(process.env.VITE_FIREBASE_APP_ID),
-};
-
-const app = getApps().length ? getApps()[0] : initializeApp(config);
-export const db = getFirestore(app);
+export const db = admin.firestore();
+export const FieldValue = admin.firestore.FieldValue;

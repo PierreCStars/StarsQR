@@ -1,16 +1,15 @@
-import { collection, query, where, getDocs, doc, updateDoc, addDoc, increment, serverTimestamp } from 'firebase/firestore';
-import { db } from '../_lib/firebase.js';
+import { db, FieldValue } from '../_lib/firebase.js';
 
 export default async function handler(req, res) {
   const code = req.query.code;
   if (!code) return res.status(400).send('Missing code');
   try {
-    let snap = await getDocs(query(collection(db, 'qrCodes'), where('shortCode', '==', code)));
+    let snap = await db.collection('qrCodes').where('shortCode', '==', code).limit(1).get();
     if (snap.empty) {
       const host = req.headers['x-forwarded-host'] || req.headers.host;
       const proto = req.headers['x-forwarded-proto'] || 'https';
       const full = `${proto}://${host}/r/${code}`;
-      snap = await getDocs(query(collection(db, 'qrCodes'), where('shortUrl', '==', full)));
+      snap = await db.collection('qrCodes').where('shortUrl', '==', full).limit(1).get();
     }
     if (snap.empty) return res.status(404).send('QR code introuvable');
 
@@ -20,13 +19,17 @@ export default async function handler(req, res) {
     if (!target) return res.status(404).send('QR code introuvable');
 
     try {
-      await updateDoc(doc(db, 'qrCodes', docSnap.id), { scanCount: increment(1), lastScanned: serverTimestamp(), updatedAt: serverTimestamp() });
-      await addDoc(collection(db, 'qrCodeScans'), {
+      await docSnap.ref.update({
+        scanCount: FieldValue.increment(1),
+        lastScanned: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+      await db.collection('qrCodeScans').add({
         qrCodeId: docSnap.id,
         userAgent: req.headers['user-agent'] || 'Unknown',
         referrer: req.headers.referer || 'Direct',
         ipAddress: (req.headers['x-forwarded-for'] || '').split(',')[0] || 'Unknown',
-        timestamp: serverTimestamp(),
+        timestamp: FieldValue.serverTimestamp(),
       });
     } catch (e) { console.error('scan tracking failed', e); }
 

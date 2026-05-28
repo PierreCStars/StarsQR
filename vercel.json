@@ -14,9 +14,13 @@
   ],
   "functions": {
     "api/r/[code].js": { "maxDuration": 10 },
-"api/save-qr-code.js": { "maxDuration": 10 },
+    "api/save-qr-code.js": { "maxDuration": 10 },
     "api/send-scan-notification.js": { "maxDuration": 10 },
     "api/extract-title.js": { "maxDuration": 10 },
-    "api/hubspot-campaigns.js": { "maxDuration": 10 }
+    "api/hubspot-campaigns.js": { "maxDuration": 10 },
+    "api/qr-codes.js": { "maxDuration": 10 },
+    "api/qr-code-delete.js": { "maxDuration": 10 },
+    "api/qr-codes-clear.js": { "maxDuration": 10 },
+    "api/qr-code-increment.js": { "maxDuration": 10 }
   }
 }

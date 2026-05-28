@@ -1,6 +1,5 @@
 // Vercel serverless function to save QR codes from Chrome extension
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from './_lib/firebase.js';
+import { db, FieldValue } from './_lib/firebase.js';
 
 export default async function handler(req, res) {
   // Enable CORS for Chrome extension
@@ -19,7 +18,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { url, filename, format, utmParams } = req.body;
+    const { url, filename, format, utmParams, shortCode, shortUrl } = req.body;
 
     if (!url) {
       return res.status(400).json({ error: 'URL is required' });
@@ -28,34 +27,35 @@ export default async function handler(req, res) {
     // Prepare data for Firebase (matching main app structure)
     const qrData = {
       originalUrl: url,
-      shortUrl: url, // Extension doesn't shorten URLs by default
+      shortUrl: shortUrl || url, // Extension may send a pre-shortened URL
+      shortCode: shortCode || null,
+      fullUrl: url,
       utmSource: utmParams?.utm_source || 'chrome_extension',
       utmMedium: utmParams?.utm_medium || 'qr_code',
       utmCampaign: utmParams?.utm_campaign || '',
       utmTerm: utmParams?.utm_term || '',
       utmContent: utmParams?.utm_content || '',
-      fullUrl: url,
-      scanCount: 0,
       filename: filename || 'qr-code.png',
       format: format || 'png',
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
+      scanCount: 0,
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     };
 
     // Add to Firebase
-    const docRef = await addDoc(collection(db, 'qrCodes'), qrData);
+    const docRef = await db.collection('qrCodes').add(qrData);
 
     res.status(200).json({
       success: true,
       firebaseId: docRef.id,
-      message: 'QR code saved to database'
+      message: 'QR code saved to database',
     });
 
   } catch (error) {
     console.error('Error saving QR code:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
     });
   }
-} 
+}
